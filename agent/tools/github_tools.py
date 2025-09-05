@@ -107,25 +107,33 @@ Estimated Review Time: 24-48 hours for production resources
             g = Github(agent_config.GITHUB_TOKEN)
             repo = g.get_repo(agent_config.GITHUB_REPO)
             
-            # Create branch
-            branch_name = f"s3-bucket/{ticket_id.lower()}-{bucket_name}"
-            main_branch = repo.get_branch("main")
+            # Determine request type and create appropriate branch name
+            if "iam-policy" in bucket_name.lower():
+                branch_name = f"iam-policy/{ticket_id.lower()}-{bucket_name.replace('iam-policy-', '')}"
+                file_path = f"terraform/iam-policies/{ticket_id.lower()}/main.tf"
+                commit_message = f"Add IAM policy configuration for {ticket_id}"
+                pr_title = f"IAM Policy Update for {ticket_id}"
+            else:
+                branch_name = f"s3-bucket/{ticket_id.lower()}-{bucket_name}"
+                file_path = f"terraform/s3-buckets/{bucket_name}/main.tf"
+                commit_message = f"Add S3 bucket configuration for {ticket_id}"
+                pr_title = f"Add S3 bucket configuration for {ticket_id}"
+                
+            target_branch = repo.get_branch(agent_config.GITHUB_TARGET_BRANCH)
             repo.create_git_ref(
                 ref=f"refs/heads/{branch_name}",
-                sha=main_branch.commit.sha
+                sha=target_branch.commit.sha
             )
             
             # Create files
-            file_path = f"terraform/s3-buckets/{bucket_name}/main.tf"
             repo.create_file(
                 path=file_path,
-                message=f"Add S3 bucket configuration for {ticket_id}",
+                message=commit_message,
                 content=terraform_config,
                 branch=branch_name
             )
             
             # Create PR
-            pr_title = f"Add S3 bucket configuration for {ticket_id}"
             pr_body = self._generate_pr_description(
                 ticket_id, bucket_name, requirements_summary
             )
@@ -134,7 +142,7 @@ Estimated Review Time: 24-48 hours for production resources
                 title=pr_title,
                 body=pr_body,
                 head=branch_name,
-                base="main"
+                base=agent_config.GITHUB_TARGET_BRANCH  # Use configurable target branch
             )
             
             return f"""
@@ -158,25 +166,35 @@ Status: {pr.state}
                                 requirements_summary: str) -> str:
         """Generate comprehensive PR description"""
         
-        description = f"""## S3 Bucket Creation Request
+        # Determine if this is IAM or S3 request
+        is_iam_request = "iam-policy" in bucket_name.lower() or "IAM Policy:" in requirements_summary
+        
+        if is_iam_request:
+            request_type = "IAM Policy Update"
+            resource_name = bucket_name.replace("iam-policy-", "").replace("iam-policy", "IAM Policy")
+        else:
+            request_type = "S3 Bucket Creation"
+            resource_name = bucket_name
+        
+        description = f"""## {request_type} Request
 
 ### ServiceNow Ticket
 - **Ticket ID**: {ticket_id}
-- **Request Type**: S3 Bucket Creation
+- **Request Type**: {request_type}
 
-### Bucket Details
-- **Bucket Name**: `{bucket_name}`
+### Resource Details
+- **Resource Name**: `{resource_name}`
 - **Configuration**: See attached Terraform files
 
 ### Requirements Summary
 {requirements_summary}
 
 ### Security Review
-- [ ] Encryption configured appropriately
-- [ ] Public access blocked
-- [ ] IAM policies follow least privilege
+{"- [ ] IAM policy follows least privilege principle" if is_iam_request else "- [ ] Encryption configured appropriately"}
+{"- [ ] Role permissions are appropriate" if is_iam_request else "- [ ] Public access blocked"}
+{"- [ ] Access scope is properly limited" if is_iam_request else "- [ ] IAM policies follow least privilege"}
 - [ ] Compliance requirements addressed
-- [ ] Lifecycle policies implemented
+{"- [ ] Policy expiration configured" if is_iam_request else "- [ ] Lifecycle policies implemented"}
 
 ### Infrastructure Review
 - [ ] Terraform syntax validated
@@ -189,45 +207,52 @@ Status: {pr.state}
 - [ ] Business stakeholder approval (if required)
 - [ ] Cost center approval
 - [ ] ServiceNow ticket approved
+{"- [ ] Security team approval (REQUIRED for IAM changes)" if is_iam_request else ""}
 
 ### Deployment Plan
 1. Review and approve this PR
 2. Terraform plan will be generated automatically
 3. Infrastructure team will review plan
-4. Deploy to AWS after final approval
-5. Update ServiceNow ticket with bucket details
+{"4. Security team final approval" if is_iam_request else "4. Deploy to AWS after final approval"}
+{"5. Deploy to AWS after security approval" if is_iam_request else "5. Update ServiceNow ticket with resource details"}
+{"6. Update ServiceNow ticket with policy details" if is_iam_request else ""}
 
 ### Estimated Monthly Cost
-Based on requirements analysis: {self._estimate_monthly_cost(requirements_summary)}
+{self._estimate_monthly_cost(requirements_summary, is_iam_request)}
 
 ### Compliance Requirements
 {self._extract_compliance_info(requirements_summary)}
 
 ### Rollback Plan
-- Terraform state allows for easy resource removal
-- Data retention policies will be followed
-- Dependent resources will be identified before rollback
+{"- Policy detachment: Immediate via terraform destroy" if is_iam_request else "- Terraform state allows for easy resource removal"}
+{"- Role restoration: No changes to existing role" if is_iam_request else "- Data retention policies will be followed"}
+{"- Access revocation: Immediate upon policy removal" if is_iam_request else "- Dependent resources will be identified before rollback"}
+- Audit trail: Complete history maintained
 
 ---
 *This PR was automatically generated by the S3 Creation Agent*
-*Review workflow: {self._get_approval_workflow()}*
+*Target Branch: {agent_config.GITHUB_TARGET_BRANCH}*
+*Review workflow: {self._get_approval_workflow(is_iam_request)}*
 """
         
         return description
     
-    def _estimate_monthly_cost(self, requirements: str) -> str:
+    def _estimate_monthly_cost(self, requirements: str, is_iam_request: bool = False) -> str:
         """Estimate monthly AWS costs"""
         
-        # Simple cost estimation based on volume mentioned
+        if is_iam_request:
+            return "No additional cost (IAM policies are free)"
+        
+        # Simple cost estimation based on volume mentioned for S3
         if 'tb' in requirements.lower():
-            return "$50-200 (high volume storage)"
+            return "Based on requirements analysis: $50-200 (high volume storage)"
         elif 'gb' in requirements.lower():
             if '500gb' in requirements.lower():
-                return "$10-50 (medium volume)"
+                return "Based on requirements analysis: $10-50 (medium volume)"
             else:
-                return "$5-25 (low-medium volume)"
+                return "Based on requirements analysis: $5-25 (low-medium volume)"
         else:
-            return "<$10 (low volume)"
+            return "Based on requirements analysis: <$10 (low volume)"
     
     def _extract_compliance_info(self, requirements: str) -> str:
         """Extract compliance information"""
@@ -249,10 +274,13 @@ Based on requirements analysis: {self._estimate_monthly_cost(requirements_summar
         else:
             return "- Standard security requirements apply"
     
-    def _get_approval_workflow(self) -> str:
+    def _get_approval_workflow(self, is_iam_request: bool = False) -> str:
         """Get approval workflow info"""
         
-        return "Production: 2 approvers required | Staging: 1 approver | Development: Auto-approved"
+        if is_iam_request:
+            return "IAM Changes: Security approval required for all environments | Production: 2+ approvers"
+        else:
+            return "Production: 2 approvers required | Staging: 1 approver | Development: Auto-approved"
     
     def _arun(self, terraform_config: str, ticket_id: str, bucket_name: str, requirements_summary: str):
         raise NotImplementedError("Async not implemented")

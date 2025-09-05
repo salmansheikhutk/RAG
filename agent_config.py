@@ -22,6 +22,7 @@ SERVICENOW_PASSWORD = os.getenv("SERVICENOW_PASSWORD", "mock_pass")
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "mock_github_token")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "company/infrastructure")
+GITHUB_TARGET_BRANCH = os.getenv("GITHUB_TARGET_BRANCH", "dev")  # Target branch for PRs
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "mock_access_key")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "mock_secret")

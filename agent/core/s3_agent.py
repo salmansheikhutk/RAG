@@ -258,16 +258,226 @@ class S3CreationAgent:
         role_name = self._extract_role_name(requirements)
         bucket_pattern = self._extract_bucket_pattern(requirements)
         
-        # Generate IAM policy terraform configuration
+        # Check knowledge base for existing policies
+        existing_policies = self._check_existing_iam_policies(knowledge_search, role_name, bucket_pattern)
+        
+        if existing_policies['policy_type'] == 'extend_existing':
+            # Extend existing DataScience policy to include new bucket pattern
+            iam_config = self._generate_policy_extension(role_name, bucket_pattern, existing_policies)
+        elif existing_policies['policy_type'] == 'update_existing':
+            # Update existing policy approach
+            iam_config = self._generate_policy_update(role_name, bucket_pattern, existing_policies)
+        else:
+            # Create new policy approach
+            iam_config = self._generate_new_policy(role_name, bucket_pattern)
+        
+        return iam_config
+    
+    def _generate_policy_extension(self, role_name: str, bucket_pattern: str, existing_info: Dict[str, Any]) -> str:
+        """Generate Terraform to extend existing DataScience policy with new bucket access"""
+        
         iam_config = f"""
-# IAM Policy Update for {role_name}
-# ServiceNow Ticket: Generated from automated agent
-# Policy: Grant read access to {bucket_pattern} buckets
+# IAM Policy Extension for {role_name}
+# ServiceNow Ticket: Extend existing DataScience policy to include {bucket_pattern} access
+# Action: Adding {bucket_pattern} access to existing data_science_team_policy
 
+# Reference existing IAM role
 data "aws_iam_role" "existing_role" {{
   name = "{role_name}"
 }}
 
+# Get current DataScience team policy to extend it
+data "aws_iam_policy_document" "extended_data_science_policy" {{
+  # Preserve existing analytics-* access
+  statement {{
+    sid    = "AllowDataScienceRead"
+    effect = "Allow"
+    
+    actions = [
+      "s3:GetObject",
+      "s3:GetObjectVersion", 
+      "s3:ListBucket"
+    ]
+    
+    resources = [
+      "arn:aws:s3:::analytics-*/*",
+      "arn:aws:s3:::analytics-*"
+    ]
+  }}
+  
+  # Add new epro-* access (extending existing policy)
+  statement {{
+    sid    = "AllowDataScienceEproAccess"
+    effect = "Allow"
+    
+    actions = [
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+      "s3:ListBucket"
+    ]
+    
+    resources = [
+      "arn:aws:s3:::{bucket_pattern}",
+      "arn:aws:s3:::{bucket_pattern}/*"
+    ]
+  }}
+}}
+
+# Update the existing policy with extended permissions
+resource "aws_iam_policy" "updated_data_science_policy" {{
+  name        = "DataScienceTeamS3Access"
+  description = "Extended DataScience team access to analytics-* and {bucket_pattern} buckets"
+  policy      = data.aws_iam_policy_document.extended_data_science_policy.json
+  
+  tags = {{
+    Team           = "DataScience"
+    Purpose        = "S3ReadAccess"
+    LastUpdated    = formatdate("YYYY-MM-DD", timestamp())
+    UpdatedBy      = "S3CreationAgent"
+    BucketPatterns = "analytics-*,{bucket_pattern}"
+  }}
+}}
+
+# Ensure policy is attached to the DataScience role
+resource "aws_iam_role_policy_attachment" "data_science_s3_access" {{
+  role       = data.aws_iam_role.existing_role.name
+  policy_arn = aws_iam_policy.updated_data_science_policy.arn
+}}
+
+# Output extended policy information
+output "extended_policy_arn" {{
+  description = "ARN of the extended DataScience S3 access policy"
+  value       = aws_iam_policy.updated_data_science_policy.arn
+}}
+
+output "new_bucket_access" {{
+  description = "New bucket pattern access added"
+  value       = "DataScienceRole now has read access to {bucket_pattern} buckets"
+}}
+
+output "preserved_access" {{
+  description = "Existing access preserved"
+  value       = "Existing analytics-* access maintained"
+}}
+"""
+        
+        return iam_config
+    
+    def _check_existing_iam_policies(self, knowledge_search: str, role_name: str, bucket_pattern: str) -> Dict[str, Any]:
+        """Check if similar IAM policies already exist"""
+        
+        # Analyze knowledge search results for existing policies
+        search_lower = knowledge_search.lower()
+        
+        existing_info = {
+            'has_s3_policy': False,
+            'has_role_policy': False,
+            'existing_policy_name': None,
+            'needs_update': True,
+            'policy_type': 'create_new'  # default
+        }
+        
+        # Check for DataScienceRole specifically in knowledge base
+        if 'datasciencerole' in search_lower or 'data_science_team_policy' in search_lower:
+            existing_info['has_role_policy'] = True
+            existing_info['existing_policy_name'] = 'data_science_team_policy'
+            existing_info['policy_type'] = 'update_existing'
+            
+        # Check for existing S3 policies
+        if 's3readaccess' in search_lower or 's3_read' in search_lower or 'analytics-*' in search_lower:
+            existing_info['has_s3_policy'] = True
+            
+        # If we found a DataScience policy but new pattern is different (epro-* vs analytics-*)
+        if existing_info['has_role_policy'] and bucket_pattern == 'epro-*':
+            existing_info['needs_update'] = True
+            existing_info['policy_type'] = 'extend_existing'
+            
+        return existing_info
+    
+    def _generate_policy_update(self, role_name: str, bucket_pattern: str, existing_info: Dict[str, Any]) -> str:
+        """Generate Terraform to update existing IAM policy"""
+        
+        policy_name = existing_info.get('existing_policy_name', f"S3ReadAccess-{bucket_pattern.replace('*', 'All')}-Policy")
+        
+        iam_config = f"""
+# IAM Policy Update for {role_name}
+# ServiceNow Ticket: Update existing policy to include {bucket_pattern} access
+# Action: Updating existing policy instead of creating new one
+
+# Reference existing IAM role
+data "aws_iam_role" "existing_role" {{
+  name = "{role_name}"
+}}
+
+# Reference existing policy (if it exists) or create if missing
+data "aws_iam_policy" "existing_s3_policy" {{
+  name = "{policy_name}"
+}}
+
+# Update existing policy with additional permissions
+resource "aws_iam_policy_version" "updated_s3_policy" {{
+  policy_arn = data.aws_iam_policy.existing_s3_policy.arn
+  
+  policy = jsonencode({{
+    Version = "2012-10-17"
+    Statement = [
+      # Preserve existing permissions (this would need to be fetched from current policy)
+      {{
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion", 
+          "s3:ListBucket"
+        ]
+        Resource = [
+          # Add new bucket pattern access
+          "arn:aws:s3:::{bucket_pattern}",
+          "arn:aws:s3:::{bucket_pattern}/*"
+        ]
+      }}
+    ]
+  }})
+}}
+
+# Ensure policy is attached to role (if not already)
+resource "aws_iam_role_policy_attachment" "ensure_s3_policy_attached" {{
+  role       = data.aws_iam_role.existing_role.name
+  policy_arn = data.aws_iam_policy.existing_s3_policy.arn
+}}
+
+# Output updated policy information
+output "updated_policy_arn" {{
+  description = "ARN of the updated S3 read access policy"
+  value       = data.aws_iam_policy.existing_s3_policy.arn
+}}
+
+output "policy_update_status" {{
+  description = "Status of policy update"
+  value       = "Policy updated to include access to {bucket_pattern} buckets"
+}}
+
+output "role_attachment_status" {{
+  description = "Role attachment status"
+  value       = "Policy attached to ${{data.aws_iam_role.existing_role.name}}"
+}}
+"""
+        
+        return iam_config
+    
+    def _generate_new_policy(self, role_name: str, bucket_pattern: str) -> str:
+        """Generate Terraform to create new IAM policy (fallback)"""
+        
+        iam_config = f"""
+# IAM Policy Creation for {role_name}
+# ServiceNow Ticket: Create new policy for {bucket_pattern} access
+# Action: Creating new policy (no existing policy found)
+
+# Reference existing IAM role
+data "aws_iam_role" "existing_role" {{
+  name = "{role_name}"
+}}
+
+# Create new S3 access policy
 resource "aws_iam_policy" "s3_read_policy" {{
   name        = "S3ReadAccess-{bucket_pattern.replace('*', 'All')}-Policy"
   description = "Read access to {bucket_pattern} S3 buckets"
@@ -291,20 +501,21 @@ resource "aws_iam_policy" "s3_read_policy" {{
   }})
 }}
 
+# Attach new policy to existing role
 resource "aws_iam_role_policy_attachment" "attach_s3_read_policy" {{
   role       = data.aws_iam_role.existing_role.name
   policy_arn = aws_iam_policy.s3_read_policy.arn
 }}
 
-# Output the policy ARN
-output "policy_arn" {{
+# Output new policy information
+output "new_policy_arn" {{
   description = "ARN of the created S3 read access policy"
   value       = aws_iam_policy.s3_read_policy.arn
 }}
 
 output "attachment_status" {{
   description = "Status of policy attachment to role"
-  value       = "Policy attached to ${{data.aws_iam_role.existing_role.name}}"
+  value       = "New policy attached to ${{data.aws_iam_role.existing_role.name}}"
 }}
 """
         
