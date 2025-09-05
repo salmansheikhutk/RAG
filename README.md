@@ -1,146 +1,281 @@
-# IICS RAG Assistant
+# S3 Bucket Creation Agent
 
-A Retrieval-Augmented Generation (RAG) assistant for Informatica Intelligent Cloud Services (IICS) documentation.
+An intelligent AI agent that automates AWS S3 bucket provisioning from ServiceNow tickets using Retrieval-Augmented Generation (RAG) and multi-tool orchestration.
 
-## Features
+## 🚀 Features
 
-- 📖 **PDF Document Processing**: Load and process IICS documentation PDF
-- 🔍 **Intelligent Search**: Find relevant information using semantic similarity
-- 🤖 **AI-Powered Answers**: Get contextual answers using OpenAI's GPT models
-- 💾 **Vector Storage**: Persistent storage using ChromaDB
-- 💬 **Interactive CLI**: Simple command-line interface
+### **Agentic AI Workflow**
+- 🎫 **ServiceNow Integration**: Reads and processes ticket requests
+- 🧠 **Intelligent Requirements Extraction**: Uses AI to understand business needs
+- � **RAG-Powered Knowledge Search**: Searches company standards and patterns
+- ⚙️ **Automated Code Generation**: Creates Terraform configurations
+- � **GitHub Integration**: Creates pull requests for human approval
+- 👥 **Human-in-the-Loop**: Maintains oversight and approval workflow
 
-## Setup
+### **Knowledge Base**
+- Company AWS standards and naming conventions
+- Terraform templates and IAM policies  
+- Security and compliance requirements
+- Historical ticket patterns and solutions
+- Cost optimization guidelines
 
-### 1. Prerequisites
-- Python 3.8 or higher
-- OpenAI API key
+### **Multi-Tool Architecture**
+- **ServiceNow Reader**: Mock/real ServiceNow API integration
+- **RAG Searcher**: Company knowledge base search
+- **S3 Config Generator**: Terraform configuration generation
+- **GitHub Tools**: Repository search and PR creation
+- **Requirements Extractor**: Structured requirement parsing
 
-### 2. Installation
+## 🏗️ Architecture
+
+```
+ServiceNow Ticket → AI Agent → RAG Knowledge Base → Terraform Config → GitHub PR → Human Approval
+```
+
+### **Workflow Steps**
+1. **Read Ticket**: Extract S3 bucket requirements from ServiceNow
+2. **Analyze Requirements**: Use AI to structure and validate needs
+3. **Search Knowledge**: Find relevant company standards via RAG
+4. **Generate Config**: Create Terraform code following best practices
+5. **Create PR**: Submit for human review and approval
+6. **Deploy**: Automated deployment after approval
+
+## 📁 Project Structure
+
+```
+RAG/
+├── agent/
+│   ├── core/
+│   │   └── s3_agent.py          # Main agent orchestrator
+│   └── tools/
+│       ├── servicenow_tools.py  # ServiceNow integration
+│       ├── rag_tools.py         # Knowledge base search
+│       ├── s3_generator.py      # Terraform generation
+│       └── github_tools.py      # GitHub integration
+├── data/
+│   ├── tickets/                 # Mock ServiceNow tickets
+│   ├── repo_patterns/           # Terraform templates
+│   └── company_docs/            # Standards and policies
+├── agent_config.py              # Configuration
+├── main.py                      # CLI application
+└── requirements.txt             # Dependencies
+```
+
+## 🚀 Quick Start
+
+### 1. Setup Environment
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
+# Clone and setup
+git clone <repo-url>
 cd RAG
 
-# Create and activate virtual environment
+# Create virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On macOS/Linux
-# venv\Scripts\activate    # On Windows
+source venv/bin/activate  # macOS/Linux
+# venv\Scripts\activate   # Windows
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Configuration
+### 2. Configuration
 
-1. Add your OpenAI API key to the `.env` file:
+Add your OpenAI API key to `.env`:
 ```
-OPENAI_API_KEY=your_actual_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-2. Make sure `IICS_documentation.pdf` is in the project root directory
-
-## Usage
-
-### Basic Usage
+### 3. Run the Agent
 
 ```bash
-# Run the interactive assistant
+# Interactive mode
 python main.py
 
-# Force reload documentation (if you updated the PDF)
-python main.py --reload
-
-# Run demo questions
+# Demo mode (automated scenarios)
 python main.py --demo
 ```
 
-### Example Questions
+## 💻 Usage Examples
 
-- "What is IICS?"
-- "How do I create a mapping in IICS?"
-- "What are the different types of connections available?"
-- "How do I configure a secure agent?"
-- "What is the difference between a mapping and a mapping task?"
-- "How do I set up data quality rules?"
-
-## Architecture
-
+### **Process a ServiceNow Ticket**
+```bash
+Agent> process RITM001234
 ```
-PDF Document → Text Chunks → Embeddings → Vector Store → Similarity Search → LLM Response
-```
+The agent will:
+- Read the ticket requirements
+- Search company knowledge base
+- Generate Terraform configuration
+- Create GitHub pull request
+- Provide approval workflow
 
-1. **Document Loading**: PDF is loaded and split into manageable chunks
-2. **Embedding Creation**: Each chunk is converted to vector embeddings
-3. **Vector Storage**: Embeddings stored in ChromaDB for fast similarity search
-4. **Query Processing**: User questions are embedded and matched against stored chunks
-5. **Answer Generation**: Relevant chunks are sent to GPT for contextual answers
-
-## Project Structure
-
-```
-RAG/
-├── IICS_documentation.pdf    # Your IICS documentation
-├── requirements.txt          # Python dependencies
-├── config.py                # Configuration settings
-├── rag_assistant.py         # Main RAG implementation
-├── main.py                  # CLI interface
-├── .env                     # Environment variables (API keys)
-├── venv/                    # Virtual environment
-└── chroma_db/              # Vector database (created automatically)
+### **Search Knowledge Base**
+```bash
+Agent> search "s3 backup policies"
+Agent> search "terraform encryption standards"
 ```
 
-## Configuration Options
+### **List Open Tickets**
+```bash
+Agent> list-tickets
+```
 
-Edit `config.py` to customize:
+### **Check Agent Status**
+```bash
+Agent> status
+```
 
-- `CHUNK_SIZE`: Size of text chunks (default: 1000)
-- `CHUNK_OVERLAP`: Overlap between chunks (default: 200)
-- `MAX_TOKENS`: Maximum tokens for LLM response (default: 4000)
-- `TEMPERATURE`: LLM creativity level (default: 0.3)
+## 📊 Example Workflow
 
-## Troubleshooting
+**Input**: ServiceNow ticket requesting S3 bucket for analytics
+**Output**: Complete infrastructure-as-code solution
 
-### Common Issues
+```yaml
+Ticket: RITM001234 - Analytics bucket needed
+↓
+Requirements Extracted:
+  - Bucket: analytics-customer-data-prod  
+  - Environment: Production
+  - Encryption: AES-256
+  - Versioning: Required
+  - Compliance: GDPR, SOX
+↓  
+Knowledge Base Search:
+  - Found: naming conventions
+  - Found: security policies
+  - Found: Terraform templates
+↓
+Generated Configuration:
+  - main.tf (bucket resource)
+  - variables.tf (parameters)
+  - outputs.tf (resource outputs)
+↓
+GitHub PR Created:
+  - Branch: s3-bucket/ritm001234-analytics
+  - Reviewers: Infrastructure & Security teams
+  - Auto-deployment ready
+```
 
-1. **OpenAI API Key Error**
-   - Make sure your API key is correctly set in `.env`
-   - Check that you have credits in your OpenAI account
+## 🔧 Configuration Options
 
-2. **PDF Not Found**
-   - Ensure `IICS_documentation.pdf` is in the project root
-   - Check the file name matches exactly
+Edit `agent_config.py` to customize:
 
-3. **Memory Issues**
-   - Reduce `CHUNK_SIZE` if processing large documents
-   - Consider processing documents in smaller batches
-
-## Extending the System
-
-### Adding New Documents
 ```python
-# Add more documents to the vector store
-assistant.load_additional_documents(['new_doc.pdf'])
+# API Integration (set to True for real APIs)
+USE_REAL_SERVICENOW = False  # Mock by default
+USE_REAL_GITHUB = False      # Mock by default  
+USE_REAL_AWS = False         # Mock by default
+
+# AI Configuration
+MODEL_NAME = "gpt-3.5-turbo"  # Or "gpt-4" for better results
+TEMPERATURE = 0.1             # Low for consistent decisions
+
+# Cost Thresholds
+AUTO_APPROVE_COST_LIMIT = 100      # USD/month
+REQUIRES_BUSINESS_APPROVAL = 500   # USD/month
 ```
 
-### Custom Prompts
-Modify the prompt template in `rag_assistant.py` for specific use cases.
+## 🗄️ Knowledge Base
 
-### Different Models
-Change the OpenAI model in `config.py`:
+The agent learns from:
+
+### **ServiceNow Tickets** (`data/tickets/`)
+- Real examples of S3 bucket requests
+- Requirements patterns and common scenarios
+- Business justifications and use cases
+
+### **Repository Patterns** (`data/repo_patterns/`)
+- Terraform templates for different bucket types
+- IAM policies for various access patterns
+- Infrastructure-as-code best practices
+
+### **Company Standards** (`data/company_docs/`)
+- Naming conventions and tagging requirements
+- Security and compliance policies
+- Approval workflows and cost guidelines
+
+## 🔍 RAG System Details
+
+- **Embedding Model**: OpenAI text-embedding-ada-002
+- **Vector Store**: ChromaDB (persistent storage)
+- **Chunk Size**: 1,500 characters with 300 overlap
+- **Search Strategy**: Semantic similarity + keyword matching
+- **Context Integration**: Multi-document synthesis
+
+## 🛡️ Security & Compliance
+
+- **Encryption**: Automatic AES-256 or KMS configuration
+- **Public Access**: Always blocked by default
+- **IAM Policies**: Least-privilege access patterns
+- **Compliance**: GDPR/SOX/HIPAA/PCI support
+- **Audit Trail**: All decisions logged and traceable
+
+## 💰 Cost Management
+
+- **Auto-Approval**: <$100/month requests
+- **Business Approval**: >$500/month requires stakeholder review
+- **Cost Estimation**: AI-powered based on usage patterns
+- **Optimization**: Lifecycle policies and storage classes
+
+## 🔄 Development & Testing
+
+### **Add New Ticket Scenarios**
+```bash
+# Add to data/tickets/
+{
+  "ticket_id": "RITM001237",
+  "description": "New S3 use case...",
+  ...
+}
+```
+
+### **Extend Knowledge Base**
+```bash
+# Add to data/company_docs/ or data/repo_patterns/
+# Agent automatically reindexes on restart
+```
+
+### **Test Individual Tools**
 ```python
-# Use GPT-4 for better answers (more expensive)
-model_name="gpt-4"
+from agent.tools.s3_generator import S3ConfigGenerator
+
+generator = S3ConfigGenerator()
+config = generator._run("production analytics bucket with encryption")
 ```
 
-## Cost Considerations
+## 🤝 Integration Options
 
-- **Embedding costs**: ~$0.0001 per 1K tokens for text-embedding-ada-002
-- **LLM costs**: ~$0.002 per 1K tokens for GPT-3.5-turbo
-- Typical document processing: $1-5 for a 200-page PDF
-- Per query: $0.01-0.05 depending on context length
+- **ServiceNow**: Real API integration with pysnow
+- **GitHub**: PyGithub for repository management  
+- **AWS**: Boto3 for validation and deployment
+- **Slack/Teams**: Notification integrations
+- **JIRA**: Alternative ticket system support
 
-## License
+## 📈 Metrics & Monitoring
+
+The agent tracks:
+- Ticket processing time and success rate
+- Cost accuracy and approval patterns
+- Security compliance adherence
+- Human review feedback integration
+- Knowledge base search effectiveness
+
+## 🛠️ Troubleshooting
+
+**Common Issues:**
+1. **RAG not finding relevant info**: Add more examples to knowledge base
+2. **Terraform validation errors**: Check company standards alignment
+3. **API rate limits**: Configure delays and retry logic
+4. **Missing requirements**: Improve ticket requirement extraction
+
+## 🔮 Future Enhancements
+
+- Multi-cloud support (Azure, GCP)
+- Advanced cost optimization recommendations
+- Automated security scanning integration
+- Real-time collaboration features
+- Machine learning from approval feedback
+
+## 📄 License
 
 MIT License - see LICENSE file for details.

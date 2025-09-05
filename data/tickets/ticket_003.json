@@ -1,0 +1,16 @@
+{
+  "ticket_id": "RITM001236",
+  "short_description": "Development environment S3 buckets for testing",
+  "description": "Need multiple S3 buckets for development and testing environments.\n\nRequirements:\n- Bucket names: \n  - dev-testing-artifacts-sandbox\n  - dev-integration-test-data\n  - dev-performance-test-logs\n- Environment: Development/Sandbox\n- Access: Development team (dev-team-role)\n- Versioning: Not required\n- Encryption: Default AES-256\n- Lifecycle: Delete all objects after 30 days\n- Public access: Blocked\n- Cross-region replication: Not needed\n- Expected volume: 50GB total across all buckets\n- Temporary: These buckets can be deleted after project completion",
+  "state": "New",
+  "priority": "Low",
+  "urgency": "Low",
+  "requested_by": "mike.johnson@company.com",
+  "assigned_to": "cloud-infrastructure@company.com",
+  "business_service": "Development Platform",
+  "cost_center": "CC-11111-DEV",
+  "approval_status": "Auto-Approved",
+  "created_date": "2025-09-03T09:00:00Z",
+  "due_date": "2025-09-10T17:00:00Z",
+  "tags": ["s3", "development", "testing", "temporary", "sandbox"]
+}

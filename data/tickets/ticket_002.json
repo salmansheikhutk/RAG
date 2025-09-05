@@ -1,0 +1,16 @@
+{
+  "ticket_id": "RITM001235",
+  "short_description": "S3 bucket for application backup storage",
+  "description": "Need S3 bucket for automated application backups.\n\nRequirements:\n- Bucket name: app-backups-web-services-prod\n- Environment: Production\n- Access: Backup service account only\n- Versioning: Enabled\n- Encryption: AWS KMS with company key\n- Lifecycle: Transition to IA after 30 days, Glacier after 90 days, delete after 2 years\n- Public access: Blocked\n- Cross-region replication: Yes, to us-west-2\n- Expected volume: 100GB/day\n- Retention policy: 2 years for compliance",
+  "state": "New",
+  "priority": "High",
+  "urgency": "High", 
+  "requested_by": "sarah.smith@company.com",
+  "assigned_to": "cloud-infrastructure@company.com",
+  "business_service": "Web Applications",
+  "cost_center": "CC-67890-OPS",
+  "approval_status": "Approved",
+  "created_date": "2025-09-02T14:15:00Z",
+  "due_date": "2025-09-08T17:00:00Z",
+  "tags": ["s3", "backup", "production", "kms", "replication"]
+}

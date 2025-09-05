@@ -1,0 +1,20 @@
+{
+  "ticket_id": "RITM001234",
+  "short_description": "Request S3 bucket for customer analytics project",
+  "description": "We need a new S3 bucket for our customer analytics project to store behavioral data for machine learning models.\n\nRequirements:\n- Bucket name: analytics-customer-data-prod\n- Environment: Production\n- Access needed: Data Science team and analytics-service-account\n- Versioning: Required (enabled)\n- Encryption: AES-256 server-side encryption\n- Lifecycle policy: Delete objects after 7 years (2555 days)\n- Public access: Must be blocked\n- Cross-region replication: Not required\n- Expected data volume: 500GB initially, growing to 5TB\n- Access patterns: Write-heavy during ETL, read-heavy during analysis\n- Compliance: Must meet GDPR and SOX requirements",
+  "state": "New",
+  "priority": "Medium", 
+  "urgency": "Medium",
+  "requested_by": "john.doe@company.com",
+  "assigned_to": "cloud-infrastructure@company.com",
+  "business_service": "Customer Analytics Platform",
+  "cost_center": "CC-12345-DATA",
+  "approval_status": "Pending",
+  "created_date": "2025-09-01T10:30:00Z",
+  "due_date": "2025-09-15T17:00:00Z",
+  "tags": ["s3", "analytics", "production", "gdpr", "sox"],
+  "attachments": [
+    "data-flow-diagram.pdf",
+    "security-requirements.docx"
+  ]
+}
