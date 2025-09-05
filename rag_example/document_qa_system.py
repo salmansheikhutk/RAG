@@ -18,34 +18,39 @@ class DocumentRAGSystem:
     """Simple RAG system for technical document Q&A"""
     
     def __init__(self):
-        """Initialize the document Q&A system"""
+        """Initialize the document Q&A system with RAG components"""
         
         print("🤖 Initializing Technical Document Q&A System...")
         
-        # Initialize OpenAI models
+        # RAG COMPONENT 1: GENERATION ENGINE (Large Language Model)
+        # This AI model will create the final answers from retrieved context
+        print("🧠 RAG SETUP: Initializing GPT-3.5-turbo for answer generation...")
         self.llm = ChatOpenAI(
             openai_api_key=config.OPENAI_API_KEY,
-            model_name=config.MODEL_NAME,
-            temperature=config.TEMPERATURE,
+            model_name=config.MODEL_NAME,        # GPT-3.5-turbo for GENERATION
+            temperature=config.TEMPERATURE,      # Low temp for factual responses
             max_tokens=config.MAX_TOKENS
         )
         
+        # RAG COMPONENT 2: EMBEDDING MODEL 
+        # This AI model converts text into vectors for similarity search
+        print("📊 RAG SETUP: Initializing OpenAI embeddings for vector conversion...")
         self.embeddings = OpenAIEmbeddings(
-            openai_api_key=config.OPENAI_API_KEY
+            openai_api_key=config.OPENAI_API_KEY  # text-embedding-ada-002 for RETRIEVAL
         )
         
-        # Initialize text splitter
+        # RAG COMPONENT 3: TEXT SPLITTER
+        # Prepares documents for vector storage by chunking text
+        print("✂️ RAG SETUP: Configuring text splitter for document chunking...")
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=config.CHUNK_SIZE,
-            chunk_overlap=config.CHUNK_OVERLAP,
-            length_function=len,
+            chunk_size=config.CHUNK_SIZE,         # 1500 characters per chunk
+            chunk_overlap=config.CHUNK_OVERLAP,   # 300 char overlap for context
+            length_function=len,                  # Character-based chunking
         )
-        
-        # Initialize vector store
-        self.vector_store = None
-        self.qa_chain = None
-        
-        print("✅ System initialized successfully!")
+
+        # RAG STORAGE: Initialize placeholders for vector database and QA chain
+        self.vector_store = None    # Will hold the vector database (ChromaDB)
+        self.qa_chain = None        # Will hold the complete RAG pipeline        print("✅ System initialized successfully!")
     
     def load_documents(self, documents_path: str = None) -> List[Document]:
         """Load documents from the specified directory"""
@@ -113,7 +118,7 @@ class DocumentRAGSystem:
             return None
     
     def build_knowledge_base(self, documents: List[Document] = None):
-        """Build the vector knowledge base from documents"""
+        """Build the vector knowledge base from documents - RAG PREPARATION PHASE"""
         
         if documents is None:
             documents = self.load_documents()
@@ -124,54 +129,70 @@ class DocumentRAGSystem:
         
         print("🔄 Building vector knowledge base...")
         
-        # Create vector store
+        # RAG STEP 1: CREATE VECTOR DATABASE
+        # Convert all document chunks into embeddings and store them
+        # This is the "knowledge base" that will be searched during RETRIEVAL
+        print("📊 RAG PREPARATION: Converting documents to vectors using OpenAI embeddings...")
         self.vector_store = Chroma.from_documents(
-            documents=documents,
-            embedding=self.embeddings,
-            persist_directory=config.VECTOR_STORE_PATH
+            documents=documents,                    # Text chunks from documents
+            embedding=self.embeddings,              # OpenAI text-embedding-ada-002 model
+            persist_directory=config.VECTOR_STORE_PATH  # Persistent storage location
         )
         
-        # Create QA chain
+        # RAG ORCHESTRATION: Create the complete RAG chain
+        # This combines RETRIEVAL + AUGMENTATION + GENERATION in one pipeline
+        print("🔗 RAG SETUP: Creating Retrieval-Augmentation-Generation chain...")
         self.qa_chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
-            chain_type="stuff",
-            retriever=self.vector_store.as_retriever(
-                search_kwargs={"k": config.RAG_TOP_K_RESULTS}
+            llm=self.llm,                          # GENERATION: GPT-3.5-turbo for answer creation
+            chain_type="stuff",                    # AUGMENTATION: "Stuff" retrieved docs into prompt
+            retriever=self.vector_store.as_retriever(  # RETRIEVAL: Search vector database
+                search_kwargs={"k": config.RAG_TOP_K_RESULTS}  # Return top K similar chunks
             ),
-            return_source_documents=config.INCLUDE_SOURCES
+            return_source_documents=config.INCLUDE_SOURCES  # Return source attribution
         )
         
         print("✅ Knowledge base built successfully!")
     
     def load_existing_knowledge_base(self):
-        """Load an existing vector knowledge base"""
+        """Load an existing vector knowledge base - RAG PREPARATION PHASE"""
         
         if not os.path.exists(config.VECTOR_STORE_PATH):
             print("❌ No existing knowledge base found. Please run build_knowledge_base() first.")
             return False
         
-        print("📚 Loading existing knowledge base...")
+        print("📚 RAG PREPARATION: Loading existing vector database...")
         
+        # RAG COMPONENT: Load pre-built vector database with embeddings
         self.vector_store = Chroma(
-            persist_directory=config.VECTOR_STORE_PATH,
-            embedding_function=self.embeddings
+            persist_directory=config.VECTOR_STORE_PATH,    # Load from disk storage
+            embedding_function=self.embeddings             # OpenAI text-embedding-ada-002
         )
         
-        # Create QA chain
+        # RAG ORCHESTRATION: Create the complete RAG chain
+        # This combines RETRIEVAL + AUGMENTATION + GENERATION in one pipeline
+        print("🔗 RAG SETUP: Creating Retrieval-Augmentation-Generation chain...")
         self.qa_chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
-            chain_type="stuff",
-            retriever=self.vector_store.as_retriever(
-                search_kwargs={"k": config.RAG_TOP_K_RESULTS}
+            llm=self.llm,                          # GENERATION: GPT-3.5-turbo for answer creation
+            chain_type="stuff",                    # AUGMENTATION: "Stuff" retrieved docs into prompt
+            retriever=self.vector_store.as_retriever(  # RETRIEVAL: Search vector database
+                search_kwargs={"k": config.RAG_TOP_K_RESULTS}  # Return top K similar chunks
             ),
-            return_source_documents=config.INCLUDE_SOURCES
+            return_source_documents=config.INCLUDE_SOURCES  # Return source attribution
         )
         
         print("✅ Knowledge base loaded successfully!")
         return True
     
     def ask_question(self, question: str) -> Dict[str, Any]:
-        """Ask a question and get an AI-powered answer"""
+        """
+        Execute complete RAG pipeline: RETRIEVAL → AUGMENTATION → GENERATION
+        
+        Args:
+            question: USER QUERY - The question from the user
+            
+        Returns:
+            Dictionary with answer, sources, and metadata
+        """
         
         if not self.qa_chain:
             return {
@@ -180,16 +201,26 @@ class DocumentRAGSystem:
                 'error': "Knowledge base not ready"
             }
         
-        print(f"🔍 Searching for: {question}")
+        print(f"🔍 USER QUERY RECEIVED: {question}")
         
         try:
-            # Get answer from QA chain
+            # RAG PIPELINE EXECUTION - All three steps happen inside qa_chain():
+            # 1. RETRIEVAL: Convert user query to vector, search vector database
+            # 2. AUGMENTATION: Combine user query + retrieved docs into enriched prompt  
+            # 3. GENERATION: Send augmented prompt to GPT-3.5-turbo for answer
+            
+            print("🚀 RAG PIPELINE: Starting Retrieval → Augmentation → Generation...")
             result = self.qa_chain({"query": question})
             
+            # Extract the generated answer (GENERATION output)
             answer = result.get('result', 'No answer found')
-            source_docs = result.get('source_documents', [])
+            print(f"✅ RAG GENERATION: Answer created by GPT-3.5-turbo")
             
-            # Format sources
+            # Extract source documents (RETRIEVAL output) 
+            source_docs = result.get('source_documents', [])
+            print(f"📚 RAG RETRIEVAL: Found {len(source_docs)} relevant document chunks")
+            
+            # Format source attribution for user display
             sources = []
             for i, doc in enumerate(source_docs[:config.MAX_SOURCES_DISPLAY]):
                 sources.append({
@@ -199,13 +230,14 @@ class DocumentRAGSystem:
                 })
             
             return {
-                'answer': answer,
-                'sources': sources,
-                'question': question,
-                'found_documents': len(source_docs)
+                'answer': answer,                    # GENERATION: AI-created answer
+                'sources': sources,                  # RETRIEVAL: Source documents used
+                'question': question,                # USER QUERY: Original question
+                'found_documents': len(source_docs) # RAG METRICS: Number of docs retrieved
             }
             
         except Exception as e:
+            print(f"❌ RAG PIPELINE ERROR: {str(e)}")
             return {
                 'answer': f"❌ Error processing question: {str(e)}",
                 'sources': [],
