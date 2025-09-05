@@ -1,0 +1,36 @@
+# GitHub Action: Auto-merge after approval
+name: Auto-merge Agent PRs
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.user.login == 'github-actions[bot]' &&
+      github.event.review.state == 'approved'
+    
+    steps:
+      - name: Enable auto-merge
+        uses: pascalgn/merge-action@v0.15.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          merge_method: squash
+          merge_commit_title: "🤖 Agent PR: {pull_request.title}"
+          merge_commit_message: |
+            Automated infrastructure change from S3 Creation Agent
+            
+            ServiceNow Ticket: {pull_request.body}
+            Security Review: ✅ Approved
+            Human Reviewer: @{review.user.login}
+            
+            Auto-merged after human approval ✋
+
+      - name: Delete branch after merge
+        run: |
+          git push origin --delete ${{ github.head_ref }}
+        if: success()
