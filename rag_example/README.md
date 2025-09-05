@@ -1,147 +1,88 @@
-# Technical Document Q&A System
+# Document Q&A System - Simple RAG Implementation
 
-This directory contains a **simplified RAG system** designed for technical document Q&A - perfect for the business use case of searching through thousands of technical documents.
+A straightforward RAG (Retrieval-Augmented Generation) system for searching and answering questions from technical documents.
 
-## 🎯 **Business Problem Solved**
+## 🔄 **RAG Workflow**
 
-- **Wasted Time**: Instant semantic search instead of manual browsing
-- **Frustration**: Relevant, context-aware answers instead of keyword-only results  
-- **Missed Opportunities**: AI understands natural language questions
-- **Inconsistent Formats**: Unified search across PDFs, docs, text files
-
-## 🚀 **Quick Start**
-
-### **1. Setup**
-```bash
-# Install dependencies (same as main project)
-pip install -r ../requirements.txt
-
-# Copy your .env file
-cp ../.env .
+```
+1. Documents → 2. Text Chunking → 3. Embeddings → 4. Vector Database → 5. Search & Generate
 ```
 
-### **2. Add Your Documents**
+**Step by Step:**
+1. **Load Documents** - PDF, markdown, text, JSON files from `documents/` folder
+2. **Split into Chunks** - Break documents into 1500-character searchable pieces  
+3. **Create Embeddings** - Convert text chunks to vectors using OpenAI embeddings
+4. **Store in Database** - Save vectors in ChromaDB for fast similarity search
+5. **Answer Questions** - Find relevant chunks + generate answers with GPT-3.5
+
+## ⚙️ **Technical Setup**
+
+### **Core Technologies**
+- **LangChain**: RAG pipeline orchestration
+- **ChromaDB**: Vector database for embeddings
+- **OpenAI**: text-embedding-ada-002 + gpt-3.5-turbo
+- **Document Loaders**: PDF, markdown, text, JSON support
+
+### **Key Settings** (`config.py`)
+```python
+CHUNK_SIZE = 1500          # Text chunk size
+CHUNK_OVERLAP = 300        # Overlap between chunks  
+RAG_TOP_K_RESULTS = 5      # Documents retrieved per query
+MODEL_NAME = "gpt-3.5-turbo"
+TEMPERATURE = 0.1          # Low = more factual answers
+```
+
+## 🚀 **How to Run**
+
+### **1. Install Dependencies**
 ```bash
-# Put your technical documents in the documents/ folder:
+pip install -r requirements.txt
+```
+
+### **2. Set API Key**
+Create `.env` file:
+```bash
+OPENAI_API_KEY=your-openai-key-here
+```
+
+### **3. Add Documents**
+Put your files in the `documents/` folder:
+```
 documents/
-├── manuals/
-│   ├── product_manual_v2.pdf
-│   └── installation_guide.md
-├── specs/
-│   ├── technical_specs.docx
-│   └── api_documentation.txt
-├── faqs/
-│   └── troubleshooting_guide.md
-└── compliance/
-    └── compliance_report.pdf
+├── api_documentation.md
+├── product_manual.pdf  
+├── troubleshooting.txt
+└── compliance_report.docx
 ```
 
-### **3. Run the System**
+### **4. Run the System**
 ```bash
 python document_qa_system.py
 ```
 
-### **4. Ask Questions**
+### **5. Ask Questions**
 ```
-📋 Question: How do I troubleshoot error code E404?
-🤖 Answer: Based on the troubleshooting guide, error E404 typically indicates...
+📋 Question: How do I configure SSL encryption?
+🤖 Answer: According to the API documentation, SSL encryption is configured by...
 
-📋 Question: What are the compliance requirements for product X?
-🤖 Answer: According to the compliance report, product X must meet...
-
-📋 Question: Show me the installation steps
-🤖 Answer: The installation guide specifies the following steps...
+📋 Question: What are the system requirements?
+🤖 Answer: The product manual specifies the following requirements...
 ```
 
-## 📊 **Features**
-
-### **🔍 Smart Search**
-- **Semantic Understanding**: Finds relevant info even with different terminology
-- **Multi-Document Search**: Searches across all document types simultaneously
-- **Source Attribution**: Shows exactly which documents contain the answer
-
-### **💬 Natural Language Interface**
-- Ask questions in plain English
-- No need to learn complex search syntax
-- Context-aware responses
-
-### **📄 Document Support**
-- PDF files (`.pdf`)
-- Text files (`.txt`)
-- Markdown files (`.md`)
-- Word documents (`.docx`)
-- JSON files (`.json`)
-
-### **⚡ Performance**
-- Instant responses (< 2 seconds)
-- Persistent knowledge base (rebuild only when documents change)
-- Configurable chunk sizes for optimal retrieval
-
-## 🔧 **Configuration**
-
-Edit `config.py` to customize:
-
-```python
-# Document processing
-CHUNK_SIZE = 1500          # Size of text chunks
-CHUNK_OVERLAP = 300        # Overlap between chunks
-RAG_TOP_K_RESULTS = 5      # Number of relevant chunks to retrieve
-
-# Answer formatting  
-INCLUDE_SOURCES = True     # Show source documents
-MAX_SOURCES_DISPLAY = 3    # Max sources to display
-ANSWER_MAX_LENGTH = 2000   # Max answer length
+## 📁 **File Structure**
+```
+rag_example/
+├── document_qa_system.py    # Main application
+├── config.py               # Configuration settings
+├── requirements.txt        # Dependencies
+├── documents/             # Put your documents here
+└── document_knowledge_base/ # Auto-created vector database
 ```
 
-## 🏗️ **Architecture**
+## ⚡ **Quick Commands**
+- **Start**: `python document_qa_system.py`
+- **Check Status**: Type `status` in the Q&A interface
+- **Exit**: Type `quit`
+- **Rebuild Database**: Delete `document_knowledge_base/` folder and restart
 
-```
-Documents → Document Loader → Text Chunking → Embeddings → Vector DB → Q&A Chain
-```
-
-### **Key Components**:
-- **Document Loader**: Handles multiple file formats
-- **Text Splitter**: Breaks documents into searchable chunks  
-- **Vector Store**: ChromaDB for persistent storage
-- **Embeddings**: OpenAI text-embedding-ada-002
-- **Q&A Chain**: GPT-3.5-turbo for answer generation
-
-## 💡 **Usage Examples**
-
-### **Technical Support**
-```
-📋 Question: Customer reports system crashes on startup
-🤖 Answer: [Searches troubleshooting guides, installation manuals, known issues]
-```
-
-### **Product Information**
-```  
-📋 Question: What are the power requirements for Model XR-450?
-🤖 Answer: [Searches technical specifications, product manuals]
-```
-
-### **Compliance Queries**
-```
-📋 Question: What safety certifications does our product have?
-🤖 Answer: [Searches compliance reports, certification documents]
-```
-
-## 🎯 **Business Impact**
-
-- **⚡ Speed**: Seconds instead of hours to find information
-- **🎯 Accuracy**: Context-aware answers instead of irrelevant results
-- **📈 Productivity**: Technical teams spend time solving problems, not searching
-- **😊 Satisfaction**: Employees and customers get quick, accurate answers
-- **💰 Cost Savings**: Reduced support escalation and operational delays
-
-## 🔄 **Comparison with Full Agent System**
-
-| Feature | Full Agent System | Document Q&A System |
-|---------|-------------------|---------------------|
-| **Purpose** | Infrastructure automation | Document search & Q&A |
-| **Complexity** | Multi-step workflows | Simple question → answer |
-| **Integration** | ServiceNow, GitHub, AWS | Standalone document search |
-| **User Interface** | Tool + Chat modes | Chat-only interface |
-| **Use Case** | DevOps automation | Knowledge management |
-
-This simplified system focuses purely on **document Q&A** - perfect for the business use case! 🚀
+That's it! The system will automatically process your documents and be ready for questions in under 30 seconds.
