@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Q&A System - RAG Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <h1>Document Q&A System</h1>
+                </div>
+                <div class="system-info">
+                    <div class="info-item">
+                        <i class="fas fa-database"></i>
+                        <span id="doc-count">{{ document_count }} Documents</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-robot"></i>
+                        <span>RAG Powered</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="chat-container">
+                <div class="welcome-message" id="welcome-message">
+                    <div class="welcome-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h2>Ask me anything about your documents!</h2>
+                    <p>I can search through your technical documentation, manuals, and guides to provide accurate answers with source references.</p>
+                    
+                    <div class="example-questions">
+                        <h3>Try asking:</h3>
+                        <div class="example-grid">
+                            <button class="example-btn" onclick="setQuestion('How do I troubleshoot connectivity issues?')">
+                                <i class="fas fa-tools"></i>
+                                How do I troubleshoot connectivity issues?
+                            </button>
+                            <button class="example-btn" onclick="setQuestion('What are the system requirements?')">
+                                <i class="fas fa-server"></i>
+                                What are the system requirements?
+                            </button>
+                            <button class="example-btn" onclick="setQuestion('Show me the installation steps')">
+                                <i class="fas fa-download"></i>
+                                Show me the installation steps
+                            </button>
+                            <button class="example-btn" onclick="setQuestion('What are the API rate limits?')">
+                                <i class="fas fa-tachometer-alt"></i>
+                                What are the API rate limits?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="messages" id="messages"></div>
+            </div>
+
+            <div class="input-container">
+                <form id="question-form" class="question-form">
+                    <div class="input-group">
+                        <input type="text" 
+                               id="question-input" 
+                               placeholder="Ask me anything about your documents..." 
+                               required>
+                        <button type="submit" id="submit-btn" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let isProcessing = false;
+
+        function setQuestion(question) {
+            document.getElementById('question-input').value = question;
+            document.getElementById('question-input').focus();
+        }
+
+        function hideWelcomeMessage() {
+            const welcomeMsg = document.getElementById('welcome-message');
+            if (welcomeMsg) {
+                welcomeMsg.style.display = 'none';
+            }
+        }
+
+        function addMessage(content, type, sources = null) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            if (type === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="message-text">${content}</div>
+                    </div>
+                `;
+            } else if (type === 'assistant') {
+                let sourcesHtml = '';
+                if (sources && sources.length > 0) {
+                    sourcesHtml = `
+                        <div class="sources">
+                            <h4><i class="fas fa-book"></i> Sources:</h4>
+                            <div class="sources-grid">
+                                ${sources.map(source => `
+                                    <div class="source-item">
+                                        <div class="source-name">
+                                            <i class="fas fa-file-alt"></i>
+                                            ${source.name}
+                                        </div>
+                                        <div class="source-content">${source.content}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-text">
+                            <div class="answer">${content}</div>
+                            ${sourcesHtml}
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'loading') {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-text">
+                            <div class="loading">
+                                <div class="loading-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                                <span class="loading-text">Searching documents...</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+            return messageDiv;
+        }
+
+        document.getElementById('question-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (isProcessing) return;
+            
+            const questionInput = document.getElementById('question-input');
+            const question = questionInput.value.trim();
+            
+            if (!question) return;
+            
+            isProcessing = true;
+            hideWelcomeMessage();
+            
+            // Add user message
+            addMessage(question, 'user');
+            
+            // Add loading message
+            const loadingMsg = addMessage('', 'loading');
+            
+            // Clear input
+            questionInput.value = '';
+            
+            // Update button state
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const data = await response.json();
+                
+                // Remove loading message
+                loadingMsg.remove();
+                
+                if (data.success) {
+                    // Add assistant response with sources
+                    addMessage(data.answer, 'assistant', data.sources);
+                } else {
+                    addMessage(`Sorry, I encountered an error: ${data.error}`, 'assistant');
+                }
+                
+            } catch (error) {
+                // Remove loading message
+                loadingMsg.remove();
+                addMessage('Sorry, I encountered a connection error. Please try again.', 'assistant');
+            } finally {
+                // Reset button state
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                submitBtn.disabled = false;
+                isProcessing = false;
+                questionInput.focus();
+            }
+        });
+
+        // Focus on input when page loads
+        window.addEventListener('load', () => {
+            document.getElementById('question-input').focus();
+        });
+    </script>
+</body>
+</html>

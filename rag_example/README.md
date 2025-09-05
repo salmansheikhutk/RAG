@@ -34,55 +34,51 @@ TEMPERATURE = 0.1          # Low = more factual answers
 
 ## 🚀 **How to Run**
 
-### **1. Install Dependencies**
+### **Option 1: Web Interface (Recommended)**
 ```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Set API key in .env file
+echo "OPENAI_API_KEY=your-openai-key-here" > .env
+
+# Start the web application
+python app.py
 ```
 
-### **2. Set API Key**
-Create `.env` file:
-```bash
-OPENAI_API_KEY=your-openai-key-here
-```
+**Then open your browser to: http://127.0.0.1:5000**
 
-### **3. Add Documents**
-Put your files in the `documents/` folder:
-```
-documents/
-├── api_documentation.md
-├── product_manual.pdf  
-├── troubleshooting.txt
-└── compliance_report.docx
-```
-
-### **4. Run the System**
+### **Option 2: Command Line Interface**
 ```bash
 python document_qa_system.py
-```
-
-### **5. Ask Questions**
-```
-📋 Question: How do I configure SSL encryption?
-🤖 Answer: According to the API documentation, SSL encryption is configured by...
-
-📋 Question: What are the system requirements?
-🤖 Answer: The product manual specifies the following requirements...
 ```
 
 ## 📁 **File Structure**
 ```
 rag_example/
-├── document_qa_system.py    # Main application
-├── config.py               # Configuration settings
-├── requirements.txt        # Dependencies
-├── documents/             # Put your documents here
-└── document_knowledge_base/ # Auto-created vector database
+├── app.py                     # Flask web application  
+├── document_qa_system.py      # Command-line interface
+├── config.py                  # Configuration settings
+├── requirements.txt           # Dependencies
+├── run.py                     # Simple run script
+├── templates/
+│   └── index.html            # Web interface HTML
+├── static/
+│   └── style.css             # Web interface styles
+├── documents/                # Put your documents here
+│   ├── api_documentation.md
+│   ├── product_manual_xr450.md
+│   ├── compliance_report.md
+│   └── flintstone_api.json
+└── document_knowledge_base/   # Auto-created vector database
 ```
 
-## ⚡ **Quick Commands**
-- **Start**: `python document_qa_system.py`
-- **Check Status**: Type `status` in the Q&A interface
-- **Exit**: Type `quit`
-- **Rebuild Database**: Delete `document_knowledge_base/` folder and restart
+## ⚡ **Features**
+- **🌐 Beautiful Web Interface**: Modern, responsive design
+- **💬 Interactive Chat**: Real-time question and answer
+- **📄 Source Attribution**: See which documents contain answers
+- **📱 Mobile Friendly**: Works on all devices
+- **⚡ Fast Search**: Sub-2-second response times
+- **🔄 Auto-Rebuild**: Automatically processes new documents
 
 That's it! The system will automatically process your documents and be ready for questions in under 30 seconds.
