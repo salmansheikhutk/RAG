@@ -37,7 +37,7 @@ MODEL_NAME = "gpt-3.5-turbo"
 CHUNK_SIZE = 1500
 CHUNK_OVERLAP = 300
 VECTOR_STORE_PATH = "./agent_knowledge_base"
-CHROMA_DB_PATH = "./chroma_db"
+CHROMA_DB_PATH = "./chroma_db"  # Now local to this project
 RAG_TOP_K_RESULTS = 5
 
 # Data Paths

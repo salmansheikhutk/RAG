@@ -1,0 +1,73 @@
+{
+  "ticket_id": "ticket_004",
+  "short_description": "Data Science Team Access to Enterprise Production Buckets",
+  "description": "Request IAM permissions for DataScienceRole to read from all epro-* S3 buckets for analytics and ML model training.\n\nRequirements:\n- Role: DataScienceRole\n- Access Pattern: Read-only access to all buckets matching epro-* pattern\n- Bucket Pattern: epro-*\n- Operations Needed: s3:GetObject, s3:ListBucket\n- Environment: Production\n- Business Justification: Data science team needs access to enterprise production data for analytics, reporting, and machine learning model training\n- Security Requirements: Read-only access only, no write/delete permissions\n- Compliance: Must follow least-privilege principle\n- Duration: Permanent access for ongoing analytics work",
+  "state": "New",
+  "priority": "Medium",
+  "urgency": "Medium",
+  "requested_by": "sarah.chen@company.com",
+  "assigned_to": "cloud-infrastructure@company.com",
+  "department": "Data Science & Analytics",
+  "business_service": "Enterprise Analytics Platform",
+  "cost_center": "CC-67890-ANALYTICS",
+  "approval_status": "Pending",
+  "created_date": "2025-09-05T10:30:00Z",
+  "due_date": "2025-09-12T17:00:00Z",
+  "assignment_group": "Cloud Infrastructure Team",
+  "category": "Access Management",
+  "subcategory": "IAM Permissions",
+  "tags": [
+    "iam",
+    "data-science", 
+    "read-access",
+    "enterprise-production",
+    "analytics",
+    "s3-permissions",
+    "least-privilege"
+  ],
+  "approvals_required": [
+    "Security Team",
+    "Data Governance"
+  ],
+  "estimated_effort": "2 hours",
+  "risk_level": "Medium",
+  "change_type": "Standard",
+  "work_notes": [
+    {
+      "timestamp": "2025-09-05T10:35:00Z",
+      "author": "john.doe@company.com",
+      "note": "Initial assessment: Standard IAM policy creation for read-only access"
+    },
+    {
+      "timestamp": "2025-09-05T11:00:00Z", 
+      "author": "security.team@company.com",
+      "note": "Security review: Approved for read-only access with condition to use secure transport"
+    }
+  ],
+  "attachments": [
+    "data-access-request-form.pdf",
+    "security-approval.pdf"
+  ],
+  "related_tickets": [
+    "INC0012345 - Data Science team unable to access production analytics data"
+  ],
+  "configuration_items": [
+    "AWS IAM Role: DataScienceRole",
+    "S3 Buckets: epro-*"
+  ],
+  "business_impact": "Medium - Delays in analytics and ML model development if not resolved",
+  "technical_details": {
+    "aws_account": "123456789012",
+    "region": "us-east-1",
+    "existing_role": "arn:aws:iam::123456789012:role/DataScienceRole",
+    "bucket_pattern": "epro-*",
+    "required_permissions": [
+      "s3:GetObject",
+      "s3:ListBucket"
+    ],
+    "conditions": {
+      "secure_transport": true,
+      "ip_restriction": false
+    }
+  }
+}
