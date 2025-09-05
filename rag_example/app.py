@@ -99,8 +99,9 @@ def ask_question():
         for source in raw_sources[:3]:  # Limit to top 3 sources
             # Each source should be a dict with content and metadata
             if isinstance(source, dict):
-                source_name = source.get('source_file', 'Unknown document')
-                source_content = source.get('content', '')[:200] + ('...' if len(source.get('content', '')) > 200 else '')
+                # The DocumentRAGSystem returns sources with 'file' key, not 'source_file'
+                source_name = source.get('file', 'Unknown document')
+                source_content = source.get('content_preview', source.get('content', ''))[:200] + ('...' if len(source.get('content_preview', source.get('content', ''))) > 200 else '')
                 
                 sources.append({
                     'name': source_name,
