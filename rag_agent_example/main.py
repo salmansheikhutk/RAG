@@ -7,8 +7,8 @@ Chat Mode: Conversational Q&A using AI agents and RAG
 import sys
 import json
 from typing import Dict, Any
-from agent.core.s3_agent import S3CreationAgent
-from agent.tools.rag_tools import RAGSearcher
+from core.s3_agent import S3CreationAgent
+from tools.rag_tools import RAGSearcher
 from langchain_openai import ChatOpenAI
 import agent_config
 

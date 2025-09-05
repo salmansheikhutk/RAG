@@ -10,7 +10,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain.schema import Document
 from langchain.chains import RetrievalQA
-from langchain.document_loaders import TextLoader, UnstructuredPDFLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import TextLoader, UnstructuredPDFLoader, UnstructuredMarkdownLoader
 import config
 
 

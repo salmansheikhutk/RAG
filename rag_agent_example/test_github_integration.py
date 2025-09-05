@@ -75,7 +75,7 @@ def run_agent_test():
     """Run the agent and create a real PR"""
     print("\n🤖 Running S3 Agent with GitHub Integration...")
     
-    from agent.core.s3_agent import S3CreationAgent
+    from core.s3_agent import S3CreationAgent
     
     agent = S3CreationAgent()
     

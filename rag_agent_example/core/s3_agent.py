@@ -11,10 +11,10 @@ import json
 import agent_config
 
 # Import all agent tools
-from agent.tools.servicenow_tools import ServiceNowReader, TicketRequirementsExtractor
-from agent.tools.rag_tools import RAGSearcher
-from agent.tools.s3_generator import S3ConfigGenerator
-from agent.tools.github_tools import GitHubPRCreator, GitHubRepositorySearcher
+from tools.servicenow_tools import ServiceNowReader, TicketRequirementsExtractor
+from tools.rag_tools import RAGSearcher
+from tools.s3_generator import S3ConfigGenerator
+from tools.github_tools import GitHubPRCreator, GitHubRepositorySearcher
 
 
 class S3CreationAgent:
