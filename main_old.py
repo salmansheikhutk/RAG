@@ -197,67 +197,16 @@ def main():
                         print("\\n" + "="*60)
                         print("📊 WORKFLOW SUMMARY")
                         print("="*60)
-                        
-                        # Format the result nicely instead of printing raw dictionary
-                        if isinstance(result, dict):
-                            if result.get('status') == 'completed':
-                                print("✅ Status: COMPLETED")
-                                print(f"📋 Ticket ID: {result.get('ticket_id', 'N/A')}")
-                                print(f"🔧 Steps Completed: {len(result.get('steps', []))}")
-                                
-                                if result.get('final_result'):
-                                    print("\\n📄 WORKFLOW DETAILS:")
-                                    print(result['final_result'])
-                                
-                                if result.get('steps'):
-                                    print("\\n🔍 STEP-BY-STEP BREAKDOWN:")
-                                    for step in result['steps']:
-                                        action_name = step['action'].replace('_', ' ').title()
-                                        print(f"  {step['step']}. {action_name}: ✅")
-                                
-                            else:
-                                print(f"❌ Status: {result.get('status', 'UNKNOWN').upper()}")
-                                print(f"📋 Ticket ID: {result.get('ticket_id', 'N/A')}")
-                                if result.get('errors'):
-                                    print("\\n🚨 ERRORS:")
-                                    for error in result['errors']:
-                                        print(f"  • {error}")
-                        else:
-                            print(result)
+                        print(result)
                         
                     except Exception as e:
                         print(f"❌ Failed to process ticket: {str(e)}")
                         
                 elif command == "list-tickets":
                     print("\\n📋 Available ServiceNow Tickets:")
-                    try:
-                        import os
-                        import json
-                        tickets_path = "./data/tickets"
-                        if os.path.exists(tickets_path):
-                            ticket_files = [f for f in os.listdir(tickets_path) if f.endswith('.json')]
-                            ticket_files.sort()
-                            
-                            for filename in ticket_files:
-                                ticket_id = filename.replace('.json', '')
-                                filepath = os.path.join(tickets_path, filename)
-                                try:
-                                    with open(filepath, 'r') as f:
-                                        ticket_data = json.load(f)
-                                        short_desc = ticket_data.get('short_description', 'No description')[:60]
-                                        if len(ticket_data.get('short_description', '')) > 60:
-                                            short_desc += '...'
-                                        print(f"  • {ticket_id}: {short_desc}")
-                                except Exception as e:
-                                    print(f"  • {ticket_id}: (Error reading ticket)")
-                        else:
-                            print("  No tickets directory found")
-                    except Exception as e:
-                        print(f"  Error listing tickets: {str(e)}")
-                        # Fallback to hardcoded list
-                        tickets = ["ticket_001", "ticket_002", "ticket_003"]
-                        for ticket in tickets:
-                            print(f"  • {ticket}")
+                    tickets = ["ticket_001", "ticket_002", "ticket_003"]
+                    for ticket in tickets:
+                        print(f"  • {ticket}")
                     
                 elif command == "search" and args:
                     query = " ".join(args)
@@ -319,6 +268,104 @@ def main():
         
         except Exception as e:
             print(f"❌ Unexpected error: {str(e)}")
+            if command in ['quit', 'exit', 'q']:
+                print("\\n👋 Shutting down S3 Creation Agent. Goodbye!")
+                break
+            
+            elif command == 'help':
+                print_help()
+                continue
+            
+            elif command == 'status':
+                print("\\n📊 Agent Status:")
+                status = agent.get_agent_status()
+                print(format_json_output(status))
+                continue
+            
+            elif command == 'process':
+                if not args:
+                    print("❌ Please specify a ticket ID: process <ticket_id>")
+                    continue
+                
+                ticket_id = args[0].upper()
+                print(f"\\n🎫 Processing ticket {ticket_id}...")
+                
+                try:
+                    result = agent.process_ticket(ticket_id)
+                    
+                    if result['status'] == 'completed':
+                        print("\\n" + "="*60)
+                        print("✅ WORKFLOW COMPLETED SUCCESSFULLY!")
+                        print("="*60)
+                        print(result['final_result'])
+                    else:
+                        print("\\n" + "="*60)
+                        print("❌ WORKFLOW FAILED")
+                        print("="*60)
+                        print(f"Status: {result['status']}")
+                        if result['errors']:
+                            print("Errors:")
+                            for error in result['errors']:
+                                print(f"  - {error}")
+                        
+                        print("\\nSteps completed:")
+                        for step in result['steps']:
+                            print(f"  {step['step']}. {step['action'].replace('_', ' ').title()}")
+                
+                except Exception as e:
+                    print(f"❌ Error processing ticket: {str(e)}")
+                
+                continue
+            
+            elif command == 'list-tickets':
+                print("\\n📋 Retrieving open ServiceNow tickets...")
+                
+                try:
+                    tickets = agent.list_open_tickets()
+                    print("\\n" + "="*50)
+                    print("📋 OPEN SERVICENOW TICKETS")
+                    print("="*50)
+                    print(tickets)
+                except Exception as e:
+                    print(f"❌ Error retrieving tickets: {str(e)}")
+                
+                continue
+            
+            elif command == 'search':
+                if not args:
+                    print("❌ Please specify a search query: search <query>")
+                    continue
+                
+                query = ' '.join(args)
+                print(f"\\n🔍 Searching knowledge base for: '{query}'")
+                
+                try:
+                    results = agent.search_knowledge_base(query)
+                    print("\\n" + "="*50)
+                    print("📚 KNOWLEDGE BASE SEARCH RESULTS")
+                    print("="*50)
+                    print(results)
+                except Exception as e:
+                    print(f"❌ Error searching knowledge base: {str(e)}")
+                
+                continue
+            
+            elif command == 'validate':
+                print("❌ Validation command requires Terraform configuration input")
+                print("This feature would be implemented with file upload or paste functionality")
+                continue
+            
+            else:
+                print(f"❌ Unknown command: '{command}'")
+                print("Type 'help' for available commands")
+        
+        except KeyboardInterrupt:
+            print("\\n\\n👋 Interrupted by user. Goodbye!")
+            break
+        
+        except Exception as e:
+            print(f"❌ Unexpected error: {str(e)}")
+            print("Type 'help' for available commands")
 
 
 def demo_mode():
@@ -352,7 +399,7 @@ def demo_mode():
                         print(f"  ❌ {error}")
         
         except Exception as e:
-            print(f"❌ Error in demo scenario: {str(e)}")
+            print(f"❌ Demo scenario error: {str(e)}")
         
         if i < len(demo_tickets):
             input("\\nPress Enter to continue to next scenario...")
