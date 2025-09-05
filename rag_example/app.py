@@ -19,6 +19,14 @@ def initialize_qa_system():
     global qa_system
     try:
         qa_system = DocumentRAGSystem()
+        
+        # Try to load existing knowledge base
+        if not qa_system.load_existing_knowledge_base():
+            print("📚 No existing knowledge base found. Building new one...")
+            qa_system.build_knowledge_base()
+        else:
+            print("📚 Loaded existing knowledge base successfully!")
+            
         print("✅ Document Q&A System initialized successfully!")
         return True
     except Exception as e:
@@ -72,57 +80,37 @@ def ask_question():
         # Get the answer
         print(f"🔍 Processing question: {question}")
         
-        # Use the ask_question method from DocumentQASystem
-        full_response = qa_system.ask_question(question)
+        # Use the ask_question method from DocumentRAGSystem
+        response = qa_system.ask_question(question)
         
-        # Parse the response to extract answer and sources
-        if "📄 Sources" in full_response:
-            parts = full_response.split("📄 Sources")
-            answer = parts[0].replace("🤖 Answer:\n", "").strip()
-            sources_text = parts[1] if len(parts) > 1 else ""
-            
-            # Parse sources (simplified - could be enhanced)
-            sources = []
-            if sources_text:
-                # Extract source information (this is a simplified parser)
-                lines = sources_text.split('\n')
-                current_source = None
+        # The ask_question method returns a dictionary with 'answer', 'sources', etc.
+        if 'error' in response:
+            return jsonify({
+                'success': False,
+                'error': response.get('answer', 'An error occurred')
+            })
+        
+        # Extract answer and sources from the response dictionary
+        answer = response.get('answer', 'No answer provided')
+        raw_sources = response.get('sources', [])
+        
+        # Convert sources to the format expected by the web interface
+        sources = []
+        for source in raw_sources[:3]:  # Limit to top 3 sources
+            # Each source should be a dict with content and metadata
+            if isinstance(source, dict):
+                source_name = source.get('source_file', 'Unknown document')
+                source_content = source.get('content', '')[:200] + ('...' if len(source.get('content', '')) > 200 else '')
                 
-                for line in lines:
-                    line = line.strip()
-                    if line and not line.startswith('---'):
-                        if line.endswith(('.md)', '.json)', '.pdf)', '.txt)', '.docx)')):
-                            # This looks like a source name
-                            if current_source:
-                                sources.append(current_source)
-                            
-                            # Extract filename
-                            filename = line.split('(')[-1].replace(')', '').strip()
-                            current_source = {
-                                'name': filename,
-                                'content': ''
-                            }
-                        elif current_source and line and not line.startswith('  '):
-                            # This is content for the current source
-                            if len(current_source['content']) < 200:  # Limit content length
-                                current_source['content'] += line + ' '
-                
-                # Add the last source
-                if current_source and current_source not in sources:
-                    sources.append(current_source)
-                
-                # Clean up source content
-                for source in sources:
-                    source['content'] = source['content'].strip()[:200] + ('...' if len(source['content']) > 200 else '')
-        else:
-            # No sources found, just return the answer
-            answer = full_response.replace("🤖 Answer:\n", "").strip()
-            sources = []
+                sources.append({
+                    'name': source_name,
+                    'content': source_content
+                })
         
         return jsonify({
             'success': True,
             'answer': answer,
-            'sources': sources[:3]  # Limit to top 3 sources
+            'sources': sources
         })
         
     except Exception as e:
