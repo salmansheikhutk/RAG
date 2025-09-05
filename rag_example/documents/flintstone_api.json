@@ -1,0 +1,438 @@
+{
+  "api_name": "Flintstone API",
+  "version": "2.1.0",
+  "description": "The comprehensive API for managing prehistoric Bedrock operations, citizens, and resources",
+  "base_url": "https://api.bedrock.stone",
+  "authentication": {
+    "type": "stone_token",
+    "header": "X-Stone-Token",
+    "description": "Carved stone tokens required for all API access. Tokens expire every yabba-dabba-doo cycle."
+  },
+  "rate_limits": {
+    "standard": "100 requests per mammoth hour",
+    "premium": "500 requests per mammoth hour",
+    "enterprise": "Unlimited (powered by Brontosaurus)"
+  },
+  "endpoints": {
+    "citizens": {
+      "/api/v2/citizens": {
+        "GET": {
+          "description": "Get all citizens of Bedrock",
+          "parameters": {
+            "family": "string (optional) - Filter by family name (Flintstone, Rubble, etc.)",
+            "occupation": "string (optional) - Filter by job (quarry_worker, dinosaur_crane_operator, etc.)",
+            "neighborhood": "string (optional) - Filter by area (cobblestone_lane, granite_street, etc.)",
+            "limit": "integer (optional) - Max 100 per request",
+            "offset": "integer (optional) - For pagination"
+          },
+          "response_example": {
+            "citizens": [
+              {
+                "id": "FRED001",
+                "name": "Fred Flintstone",
+                "family": "Flintstone",
+                "occupation": "Quarry Worker",
+                "address": "301 Cobblestone Way",
+                "spouse": "Wilma Flintstone",
+                "children": ["Pebbles Flintstone"],
+                "pet": "Dino",
+                "catchphrase": "Yabba-Dabba-Doo!",
+                "bowling_average": 165.4,
+                "created_at": "Stone Age Year 2",
+                "status": "active"
+              }
+            ],
+            "total_count": 47,
+            "pagination": {
+              "limit": 20,
+              "offset": 0,
+              "has_more": true
+            }
+          }
+        },
+        "POST": {
+          "description": "Register a new citizen in Bedrock",
+          "required_fields": ["name", "occupation", "address"],
+          "request_example": {
+            "name": "Bamm-Bamm Rubble",
+            "family": "Rubble",
+            "occupation": "Strong Baby",
+            "address": "303 Cobblestone Way",
+            "special_abilities": ["Super strength", "Rock lifting"]
+          }
+        }
+      },
+      "/api/v2/citizens/{citizen_id}": {
+        "GET": {
+          "description": "Get detailed information about a specific citizen",
+          "path_parameters": {
+            "citizen_id": "string - Unique citizen identifier (e.g., FRED001)"
+          }
+        },
+        "PUT": {
+          "description": "Update citizen information",
+          "note": "Only the citizen themselves or clan chief can update"
+        },
+        "DELETE": {
+          "description": "Remove citizen from Bedrock registry",
+          "warning": "This action cannot be undone - citizen will be exiled to the Land of the Lost"
+        }
+      }
+    },
+    "dinosaurs": {
+      "/api/v2/dinosaurs": {
+        "GET": {
+          "description": "List all working dinosaurs in Bedrock",
+          "parameters": {
+            "species": "string (optional) - brontosaurus, stegosaurus, pterodactyl, triceratops",
+            "job_type": "string (optional) - construction, transportation, entertainment, pet",
+            "availability": "boolean (optional) - Filter available dinosaurs",
+            "size": "string (optional) - small, medium, large, colossal"
+          },
+          "response_example": {
+            "dinosaurs": [
+              {
+                "id": "DINO001",
+                "name": "Dino",
+                "species": "Snorkasaurus",
+                "owner": "Fred Flintstone",
+                "job_type": "pet",
+                "special_skills": ["Barking", "Knocking over Fred", "Licking faces"],
+                "size": "medium",
+                "diet": "Rocks and bones",
+                "temperament": "Friendly",
+                "availability": false,
+                "last_checkup": "Stone Age Year 5, Mammoth Month 3"
+              }
+            ]
+          }
+        },
+        "POST": {
+          "description": "Register a new working dinosaur",
+          "required_fields": ["name", "species", "owner", "job_type"]
+        }
+      },
+      "/api/v2/dinosaurs/rental": {
+        "POST": {
+          "description": "Rent a dinosaur for temporary work",
+          "pricing": {
+            "construction_dinosaur": "50 clams per day",
+            "transportation_dinosaur": "30 clams per day",
+            "entertainment_dinosaur": "75 clams per day"
+          },
+          "request_example": {
+            "species": "brontosaurus",
+            "rental_duration_days": 7,
+            "job_type": "construction",
+            "project_location": "Slate Rock and Gravel Company",
+            "insurance_required": true
+          }
+        }
+      }
+    },
+    "businesses": {
+      "/api/v2/businesses": {
+        "GET": {
+          "description": "Get all businesses operating in Bedrock",
+          "parameters": {
+            "industry": "string (optional) - quarrying, dining, entertainment, retail",
+            "status": "string (optional) - active, seasonal, closed",
+            "owner": "string (optional) - Filter by business owner"
+          },
+          "response_example": {
+            "businesses": [
+              {
+                "id": "BIZ001",
+                "name": "Slate Rock and Gravel Company",
+                "industry": "quarrying",
+                "owner": "Mr. Slate",
+                "address": "Industrial Boulder District",
+                "employees": ["Fred Flintstone", "Barney Rubble"],
+                "products": ["Granite slabs", "Limestone blocks", "Marble chips"],
+                "operating_hours": "Dawn to Dusk",
+                "safety_record": "3 mammoth-years without incidents",
+                "status": "active"
+              }
+            ]
+          }
+        }
+      },
+      "/api/v2/businesses/{business_id}/employees": {
+        "GET": {
+          "description": "Get all employees of a specific business"
+        },
+        "POST": {
+          "description": "Hire a new employee",
+          "requirements": {
+            "citizen_id": "Must be registered Bedrock citizen",
+            "background_check": "No saber-tooth tiger incidents",
+            "references": "At least 2 clan member references"
+          }
+        }
+      }
+    },
+    "transportation": {
+      "/api/v2/vehicles": {
+        "GET": {
+          "description": "List all stone-age vehicles available for use",
+          "vehicle_types": [
+            "foot_car",
+            "mammoth_bus",
+            "pterodactyl_air",
+            "brontosaurus_crane",
+            "stone_motorcycle"
+          ],
+          "response_example": {
+            "vehicles": [
+              {
+                "id": "VEH001",
+                "type": "foot_car",
+                "model": "Flintstone Family Cruiser",
+                "owner": "Fred Flintstone",
+                "passenger_capacity": 4,
+                "fuel_type": "Leg power",
+                "top_speed": "25 mph (downhill with tailwind)",
+                "features": ["Rock radio", "Stone steering wheel", "Mammoth fur seats"],
+                "maintenance_schedule": "Oil feet weekly",
+                "insurance_status": "Covered by Bedrock Mutual"
+              }
+            ]
+          }
+        }
+      },
+      "/api/v2/transportation/routes": {
+        "GET": {
+          "description": "Get available transportation routes in Bedrock",
+          "response_example": {
+            "routes": [
+              {
+                "id": "ROUTE001",
+                "name": "Downtown Cobblestone Express",
+                "stops": [
+                  "Flintstone House",
+                  "Rubble House", 
+                  "Bedrock Mall",
+                  "Slate Rock and Gravel Co.",
+                  "Bowling Alley"
+                ],
+                "schedule": "Every 30 minutes during daylight",
+                "fare": "2 clams per trip",
+                "operated_by": "Bedrock Transportation Authority"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "entertainment": {
+      "/api/v2/events": {
+        "GET": {
+          "description": "Get upcoming entertainment events in Bedrock",
+          "parameters": {
+            "event_type": "string (optional) - bowling, drive_in_movie, concert, sports",
+            "date_range": "string (optional) - today, this_week, this_month",
+            "venue": "string (optional) - Filter by venue name"
+          },
+          "response_example": {
+            "events": [
+              {
+                "id": "EVT001",
+                "name": "Bedrock Bowling Championship",
+                "type": "bowling",
+                "venue": "Bedrock Bowl",
+                "date": "Stone Age Year 5, Dino Month 15",
+                "time": "After sunset",
+                "participants": ["Fred Flintstone", "Barney Rubble", "Frank Frankstone"],
+                "prizes": ["Golden Bowling Ball", "50 clams", "Lifetime supply of Brontosaurus burgers"],
+                "admission": "5 clams",
+                "dress_code": "Cave formal"
+              }
+            ]
+          }
+        }
+      },
+      "/api/v2/drive-in": {
+        "GET": {
+          "description": "Get current and upcoming movies at the Bedrock Drive-In",
+          "response_example": {
+            "now_showing": [
+              {
+                "title": "The Flintstones in Viva Rock Vegas",
+                "genre": "Comedy/Romance",
+                "rating": "Suitable for all cave ages",
+                "runtime": "90 stone minutes",
+                "showtimes": ["Sunset", "Late Night"],
+                "admission": "3 clams per car",
+                "concessions": ["Brontosaurus burgers", "Pterodactyl wings", "Rock candy"]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "utilities": {
+      "/api/v2/utilities/power": {
+        "GET": {
+          "description": "Check power grid status (dinosaur-powered)",
+          "response_example": {
+            "grid_status": "operational",
+            "power_sources": [
+              {
+                "type": "Brontosaurus Generator",
+                "capacity": "500 stone-watts",
+                "efficiency": "High when well-fed",
+                "maintenance": "Daily grooming required"
+              }
+            ],
+            "current_load": "450 stone-watts",
+            "estimated_downtime": "Lunch break: 12-1 PM daily"
+          }
+        },
+        "POST": {
+          "description": "Request new power connection",
+          "requirements": {
+            "property_address": "Valid Bedrock address",
+            "usage_estimate": "Expected stone-watt consumption",
+            "deposit": "50 clams (refundable)"
+          }
+        }
+      },
+      "/api/v2/utilities/water": {
+        "GET": {
+          "description": "Check water system status",
+          "response_example": {
+            "water_quality": "Crystal clear spring water",
+            "source": "Natural rock springs",
+            "distribution_method": "Woolly mammoth delivery trucks",
+            "service_areas": ["Cobblestone Way", "Granite Street", "Limestone Lane"],
+            "emergency_contact": "Bedrock Water Works - Call 'WATER' on shell phone"
+          }
+        }
+      }
+    },
+    "emergency": {
+      "/api/v2/emergency/fire": {
+        "POST": {
+          "description": "Report fire emergency",
+          "emergency_contact": "Bedrock Fire Department",
+          "response_time": "5 minutes (dinosaur-powered fire truck)",
+          "equipment": ["Stone ladders", "Water-squirting dinosaurs", "Rescue pterodactyls"],
+          "request_example": {
+            "location": "301 Cobblestone Way",
+            "fire_type": "Cave fire",
+            "severity": "major",
+            "people_trapped": false,
+            "caller_name": "Fred Flintstone",
+            "callback_shell_number": "BEDROCK-FIRE"
+          }
+        }
+      },
+      "/api/v2/emergency/police": {
+        "POST": {
+          "description": "Report crime or request police assistance",
+          "response_example": {
+            "incident_id": "CRIME001",
+            "status": "Dispatched",
+            "responding_officer": "Officer Slate",
+            "estimated_arrival": "10 stone minutes",
+            "case_number": "BR-2024-001"
+          }
+        }
+      }
+    },
+    "weather": {
+      "/api/v2/weather/current": {
+        "GET": {
+          "description": "Get current weather conditions in Bedrock",
+          "response_example": {
+            "temperature": "75 cave degrees",
+            "conditions": "Sunny with occasional pterodactyl clouds",
+            "wind": "Light breeze from the tar pits",
+            "humidity": "Comfortably dry",
+            "visibility": "Clear to the next mountain",
+            "uv_index": "Dinosaur-safe levels",
+            "air_quality": "Fresh stone air"
+          }
+        }
+      },
+      "/api/v2/weather/forecast": {
+        "GET": {
+          "description": "Get weather forecast for upcoming days",
+          "parameters": {
+            "days": "integer (1-7) - Number of days to forecast"
+          },
+          "response_example": {
+            "forecast": [
+              {
+                "date": "Tomorrow",
+                "temperature_high": "80 cave degrees",
+                "temperature_low": "60 cave degrees",
+                "conditions": "Partly cloudy with chance of meteor showers",
+                "precipitation": "10% chance of rock rain"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "error_codes": {
+    "400": "Bad Request - Check your stone tablet formatting",
+    "401": "Unauthorized - Invalid or expired stone token",
+    "403": "Forbidden - Insufficient clan privileges",
+    "404": "Not Found - Resource vanished like a dinosaur",
+    "429": "Too Many Requests - Rate limit exceeded, try again after mammoth hour",
+    "500": "Internal Server Error - Volcano erupted in our data cave",
+    "503": "Service Unavailable - Dinosaurs are on strike"
+  },
+  "response_formats": {
+    "success": {
+      "status": "success",
+      "data": "...",
+      "timestamp": "Stone Age timestamp",
+      "api_version": "2.1.0"
+    },
+    "error": {
+      "status": "error", 
+      "error_code": "404",
+      "message": "Resource not found in Bedrock database",
+      "timestamp": "Stone Age timestamp",
+      "help_url": "https://docs.bedrock.stone/errors"
+    }
+  },
+  "pagination": {
+    "default_limit": 20,
+    "max_limit": 100,
+    "parameters": {
+      "limit": "Number of results per page",
+      "offset": "Number of results to skip",
+      "has_more": "Boolean indicating if more results exist"
+    }
+  },
+  "changelog": {
+    "2.1.0": {
+      "date": "Stone Age Year 5",
+      "changes": [
+        "Added dinosaur rental endpoints",
+        "Improved error handling for pterodactyl network outages",
+        "Added weather forecasting powered by woolly mammoth meteorologists",
+        "Enhanced security with carved stone token authentication"
+      ]
+    },
+    "2.0.0": {
+      "date": "Stone Age Year 4", 
+      "changes": [
+        "Major API redesign with RESTful stone principles",
+        "Added real-time event notifications via smoke signals",
+        "Implemented rate limiting to prevent mammoth overload",
+        "Added support for multi-family queries"
+      ]
+    }
+  },
+  "contact": {
+    "support": "Send smoke signal to Bedrock API Support",
+    "documentation": "https://docs.bedrock.stone",
+    "community": "Bedrock Developer Cave Paintings",
+    "emergency": "Hit rocks together three times"
+  }
+}
