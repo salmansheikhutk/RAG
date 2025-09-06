@@ -1,0 +1,14 @@
+# Simple RAG System Requirements
+# Minimal dependencies - no LangChain complexity
+
+# Core dependencies
+openai>=1.0.0           # OpenAI API for embeddings and generation  
+numpy>=1.21.0           # For cosine similarity calculations
+python-dotenv>=1.0.0    # For environment variable management
+
+# Optional (already included in Python)
+# json - JSON file handling
+# os - File operations  
+# re - Text processing
+# math - Mathematical operations
+# typing - Type hints
