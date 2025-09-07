@@ -164,14 +164,12 @@ def generate_answer_with_history(question: str, context_chunks: List[Dict[str, A
             history_text += f"Q{i+1}: {prev_q}\nA{i+1}: {prev_a}\n\n"
     
     # Create enhanced prompt
-    prompt = f"""You are a helpful assistant answering questions about the Flintstone API documentation.
-
-Use the context and previous conversation to answer the current question. Be specific and accurate.
+    prompt = f"""Use the context to answer the question naturally and concisely.
 
 CONTEXT:
 {context}{history_text}
 
-CURRENT QUESTION: {question}
+QUESTION: {question}
 
 ANSWER:"""
     
@@ -191,7 +189,7 @@ ANSWER:"""
         return answer
         
     except Exception as e:
-        return f"❌ Error generating answer: {e}"
+        return f"Error generating answer: {e}"
 
 def initialize_rag_system():
     """🚀 Initialize the RAG system - load or create vector database"""
@@ -296,7 +294,7 @@ def chat():
         
         if not search_results:
             return jsonify({
-                'answer': 'Sorry, I couldn\'t find relevant information to answer your question.',
+                'answer': 'I couldn\'t find relevant information for that question.',
                 'chunks_used': 0,
                 'similarities': []
             })
@@ -319,7 +317,7 @@ def clear_history():
     """Clear conversation history"""
     global conversation_history
     conversation_history = []
-    return jsonify({'message': 'Conversation history cleared'})
+    return jsonify({'message': 'History cleared'})
 
 @app.route('/api/status')
 def status():

@@ -219,52 +219,43 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>🚀 Flintstone API RAG Chat</h1>
-            <p>Ask questions about the prehistoric Bedrock API</p>
+            <h1>🦕 Flintstone API</h1>
+            <p>Ask me anything</p>
         </div>
         
         <div class="status-bar">
-            <span id="status">🔄 Connecting...</span>
+            <span id="status">🔄 Loading...</span>
         </div>
         
         <div class="chat-messages" id="chatMessages">
             <div class="message assistant">
                 <div class="message-content">
-                    <strong>🦕 Welcome to the Flintstone API Assistant!</strong><br><br>
-                    I can help you with questions about:
-                    <ul style="margin: 10px 0; padding-left: 20px;">
-                        <li>API authentication and security</li>
-                        <li>Citizen management endpoints</li>
-                        <li>Dinosaur services and rentals</li>
-                        <li>Transportation and utilities</li>
-                        <li>Entertainment and events</li>
-                    </ul>
-                    Try asking me anything about the Flintstone API!
+                    👋 Hi! I'm here to help with the Flintstone API.
                 </div>
             </div>
         </div>
         
         <div class="chat-input">
             <div class="controls">
-                <button class="control-button" onclick="clearHistory()">🗑️ Clear History</button>
+                <button class="control-button" onclick="clearHistory()">🗑️ Clear</button>
                 <button class="control-button" onclick="showExamples()">💡 Examples</button>
             </div>
             
             <div class="example-questions" id="exampleQuestions" style="display: none;">
                 <div class="example-question" onclick="askExample('How do I authenticate with the API?')">
-                    🔐 How do I authenticate?
+                    🔐 Authentication
                 </div>
                 <div class="example-question" onclick="askExample('What dinosaur services are available?')">
                     🦕 Dinosaur services
                 </div>
                 <div class="example-question" onclick="askExample('How do I get citizen information?')">
-                    👥 Citizen info
+                    👥 Citizens
                 </div>
                 <div class="example-question" onclick="askExample('What are the rate limits?')">
-                    ⏱️ Rate limits
+                    ⚡ Rate limits
                 </div>
                 <div class="example-question" onclick="askExample('How do I rent a dinosaur?')">
-                    🚚 Rent dinosaur
+                    🚚 Rentals
                 </div>
             </div>
             
@@ -277,7 +268,7 @@
                 <textarea 
                     class="input-field" 
                     id="questionInput" 
-                    placeholder="Ask me about the Flintstone API..."
+                    placeholder="Ask me anything..."
                     rows="1"
                 ></textarea>
                 <button class="send-button" id="sendButton" onclick="sendMessage()">
@@ -313,12 +304,12 @@
                 
                 const statusElement = document.getElementById('status');
                 if (data.status === 'ready') {
-                    statusElement.innerHTML = `✅ Ready | ${data.chunks_loaded} chunks loaded | Conversation: ${data.conversation_length} exchanges`;
+                    statusElement.innerHTML = `✅ Ready • ${data.chunks_loaded} chunks • ${data.conversation_length} messages`;
                 } else {
-                    statusElement.innerHTML = '❌ System not ready';
+                    statusElement.innerHTML = '⚠️ Loading...';
                 }
             } catch (error) {
-                document.getElementById('status').innerHTML = '❌ Connection error';
+                document.getElementById('status').innerHTML = '🔌 Connection error';
             }
         }
 
@@ -352,16 +343,16 @@
                 
                 if (response.ok) {
                     // Add assistant response
-                    const meta = `📊 Used ${data.chunks_used} chunks | Similarities: ${data.similarities.join(', ')}`;
+                    const meta = `📊 ${data.chunks_used} chunks • ${data.similarities.join(', ')}`;
                     addMessage('assistant', data.answer, meta);
                     
                     // Update status
                     checkStatus();
                 } else {
-                    addMessage('assistant', `❌ Error: ${data.error}`);
+                    addMessage('assistant', `❌ ${data.error}`);
                 }
             } catch (error) {
-                addMessage('assistant', `❌ Connection error: ${error.message}`);
+                addMessage('assistant', `🔌 Connection error`);
             } finally {
                 setLoading(false);
             }
@@ -414,10 +405,10 @@
                 messagesContainer.innerHTML = '';
                 messagesContainer.appendChild(welcomeMessage);
                 
-                addMessage('assistant', '🗑️ Conversation history cleared! Ask me anything.');
+                addMessage('assistant', '✅ History cleared');
                 checkStatus();
             } catch (error) {
-                addMessage('assistant', `❌ Error clearing history: ${error.message}`);
+                addMessage('assistant', `❌ Error`);
             }
         }
 
