@@ -1,0 +1,133 @@
+============================================================
+RETRIEVAL RESULTS
+Question: Which endpoints allows me to find the citizens of bedrock?
+Top-K results: 3
+============================================================
+
+RETRIEVED CHUNK 1:
+Chunk ID: 0
+Similarity Score: 0.820557
+Text Length: 985 characters
+----------------------------------------
+api_name:
+  Flintstone API
+version:
+  2.1.0
+description:
+  The comprehensive API for managing prehistoric Bedrock operations, citizens, and resources
+base_url:
+  https://api.bedrock.stone
+authentication:
+  type:
+    stone_token
+  header:
+    X-Stone-Token
+  description:
+    Carved stone tokens required for all API access. Tokens expire every yabba-dabba-doo cycle.
+rate_limits:
+  standard:
+    100 requests per mammoth hour
+  premium:
+    500 requests per mammoth hour
+  enterprise:
+    Unlimited (powered by Brontosaurus)
+endpoints:
+  citizens:
+    /api/v2/citizens:
+      GET:
+        description:
+          Get all citizens of Bedrock
+        parameters:
+          family:
+            string (optional) - Filter by family name (Flintstone, Rubble, etc.)
+          occupation:
+            string (optional) - Filter by job (quarry_worker, dinosaur_crane_operator, etc.)
+          neighborhood:
+            string (optional) - Filter by area (cobblestone_lane, granite_street, etc.)
+============================================================
+
+RETRIEVED CHUNK 2:
+Chunk ID: 2
+Similarity Score: 0.806684
+Text Length: 990 characters
+----------------------------------------
+-Dabba-Doo!
+            bowling_average:
+              165.4
+            created_at:
+              Stone Age Year 2
+            status:
+              active
+          total_count:
+            47
+          pagination:
+            limit:
+              20
+            offset:
+              0
+            has_more:
+              True
+      POST:
+        description:
+          Register a new citizen in Bedrock
+        required_fields:
+          - name
+          - occupation
+          - address
+        request_example:
+          name:
+            Bamm-Bamm Rubble
+          family:
+            Rubble
+          occupation:
+            Strong Baby
+          address:
+            303 Cobblestone Way
+          special_abilities:
+            - Super strength
+            - Rock lifting
+    /api/v2/citizens/{citizen_id}:
+      GET:
+        description:
+          Get detailed information about a specific citizen
+        path_parameters:
+          citizen_id:
+            string - Unique citizen
+============================================================
+
+RETRIEVED CHUNK 3:
+Chunk ID: 3
+Similarity Score: 0.801080
+Text Length: 984 characters
+----------------------------------------
+v2/citizens/{citizen_id}:
+      GET:
+        description:
+          Get detailed information about a specific citizen
+        path_parameters:
+          citizen_id:
+            string - Unique citizen identifier (e.g., FRED001)
+      PUT:
+        description:
+          Update citizen information
+        note:
+          Only the citizen themselves or clan chief can update
+      DELETE:
+        description:
+          Remove citizen from Bedrock registry
+        warning:
+          This action cannot be undone - citizen will be exiled to the Land of the Lost
+  dinosaurs:
+    /api/v2/dinosaurs:
+      GET:
+        description:
+          List all working dinosaurs in Bedrock
+        parameters:
+          species:
+            string (optional) - brontosaurus, stegosaurus, pterodactyl, triceratops
+          job_type:
+            string (optional) - construction, transportation, entertainment, pet
+          availability:
+            boolean (optional) - Filter available dinosaurs
+============================================================
+
