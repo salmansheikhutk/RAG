@@ -30,7 +30,10 @@ class RAGConfig:
     CHUNK_OVERLAP = 200
     
     # Files
-    INPUT_DOCUMENT = "./documents/flintstone_api.json"
+    INPUT_DOCUMENTS = [
+        "./documents/flintstone_api.json",
+        "./documents/flintstone_api2.json"
+    ]
     VECTOR_DATABASE_FILE = "vector_database.json"
     
     # RAG Settings
@@ -206,15 +209,34 @@ def initialize_rag_system():
     # Create new vector database
     print("🔄 Creating new vector database...")
     
-    # Load and process document
-    with open(RAGConfig.INPUT_DOCUMENT, 'r', encoding='utf-8') as file:
-        raw_json_data = json.load(file)
+    # Load and process all documents
+    all_document_text = ""
+    processed_files = []
     
-    # Convert JSON to text
-    document_text = json_to_text(raw_json_data)
+    for doc_path in RAGConfig.INPUT_DOCUMENTS:
+        if os.path.exists(doc_path):
+            print(f"📄 Processing {doc_path}...")
+            with open(doc_path, 'r', encoding='utf-8') as file:
+                raw_json_data = json.load(file)
+            
+            # Convert JSON to text with file identifier
+            document_text = f"--- Document: {doc_path} ---\n"
+            document_text += json_to_text(raw_json_data)
+            document_text += f"\n--- End of {doc_path} ---\n\n"
+            
+            all_document_text += document_text
+            processed_files.append(doc_path)
+        else:
+            print(f"⚠️ Warning: File not found - {doc_path}")
     
-    # Create chunks
-    text_chunks_list = chunk_text(document_text)
+    if not all_document_text:
+        print("❌ No documents found to process!")
+        return False
+    
+    print(f"✅ Successfully loaded {len(processed_files)} documents")
+    
+    # Create chunks from combined text
+    text_chunks_list = chunk_text(all_document_text)
     chunks_with_metadata = []
     
     for i, chunk in enumerate(text_chunks_list):
@@ -245,7 +267,7 @@ def initialize_rag_system():
     # Create vector database structure
     vector_data = {
         "metadata": {
-            "source_document": RAGConfig.INPUT_DOCUMENT,
+            "source_documents": processed_files,
             "chunk_size": RAGConfig.CHUNK_SIZE,
             "chunk_overlap": RAGConfig.CHUNK_OVERLAP,
             "embedding_model": RAGConfig.EMBEDDING_MODEL,

@@ -1,0 +1,234 @@
+{
+  "api_name": "Bedrock Citizens Management API",
+  "version": "3.0.1",
+  "description": "Alternative documentation for Bedrock citizen management system - Updated protocols",
+  "base_url": "https://citizens.bedrock.gov",
+  "authentication": {
+    "type": "mammoth_key",
+    "header": "Authorization",
+    "description": "Bearer tokens carved on mammoth tusks. Required format: 'Bearer MAMMOTH_[token]'"
+  },
+  "endpoints": {
+    "citizens": {
+      "/citizens/v3/residents": {
+        "GET": {
+          "description": "Retrieve all registered residents of Bedrock (UPDATED ENDPOINT)",
+          "parameters": {
+            "surname": "string (required) - Family surname filter",
+            "job": "string (optional) - Employment filter", 
+            "district": "string (optional) - Residential district",
+            "page_size": "integer (optional) - Max 50 per request (changed from 100)",
+            "page_number": "integer (optional) - Page number for results"
+          },
+          "response_example": {
+            "residents": [
+              {
+                "resident_id": "RES_FRED_001",
+                "full_name": "Frederick J. Flintstone",
+                "surname": "Flintstone",
+                "employment": "Senior Quarry Operator",
+                "home_address": "301 Cobblestone Way, Bedrock",
+                "marital_status": "Married to Wilma",
+                "dependents": [
+                  {
+                    "name": "Pebbles Flintstone",
+                    "relationship": "daughter",
+                    "age": "toddler"
+                  }
+                ],
+                "household_pet": {
+                  "name": "Dino",
+                  "species": "Snorkasaurus",
+                  "registration_number": "PET_001"
+                },
+                "famous_saying": "Yabba-Dabba-Doo!",
+                "bowling_score": 165,
+                "registration_date": "Year 2 of Stone Age",
+                "account_status": "verified"
+              }
+            ],
+            "total_residents": 47,
+            "page_info": {
+              "page_size": 20,
+              "current_page": 1,
+              "total_pages": 3,
+              "has_next_page": true
+            }
+          }
+        },
+        "POST": {
+          "description": "Register new resident in Bedrock system",
+          "required_fields": ["full_name", "surname", "employment", "home_address", "district"],
+          "authentication_required": "mammoth_key with ADMIN_WRITE permissions",
+          "request_example": {
+            "full_name": "Bamm-Bamm Rubble Jr.",
+            "surname": "Rubble", 
+            "employment": "Professional Strong Baby",
+            "home_address": "303 Cobblestone Way",
+            "district": "Cobblestone District",
+            "special_notes": "Exceptionally strong for age",
+            "emergency_contact": "Barney Rubble"
+          }
+        }
+      },
+      "/citizens/v3/lookup/{resident_id}": {
+        "GET": {
+          "description": "Get comprehensive resident profile by ID (DIFFERENT PATH)",
+          "path_parameters": {
+            "resident_id": "string - Format: RES_[NAME]_[NUMBER] (e.g., RES_FRED_001)"
+          },
+          "headers_required": {
+            "Authorization": "Bearer MAMMOTH_[token]",
+            "X-District-Code": "Required district verification code"
+          },
+          "response_example": {
+            "resident_profile": {
+              "basic_info": {
+                "resident_id": "RES_FRED_001",
+                "full_name": "Frederick J. Flintstone",
+                "preferred_name": "Fred",
+                "birth_year": "Unknown (Stone Age records incomplete)"
+              },
+              "contact_details": {
+                "primary_address": "301 Cobblestone Way",
+                "postal_district": "CBST-001", 
+                "shell_phone": "BEDROCK-301",
+                "smoke_signal_code": "THREE-LONG-TWO-SHORT"
+              },
+              "employment_record": {
+                "current_job": "Senior Quarry Operator",
+                "employer": "Slate Rock and Gravel Company",
+                "years_employed": 8,
+                "salary_range": "500-750 clams annually",
+                "performance_rating": "Satisfactory (occasional tardiness noted)"
+              },
+              "family_structure": {
+                "spouse": {
+                  "name": "Wilma Slaghoopal Flintstone",
+                  "maiden_name": "Slaghoopal",
+                  "resident_id": "RES_WILMA_001"
+                },
+                "children": [
+                  {
+                    "name": "Pebbles Flintstone", 
+                    "resident_id": "RES_PEBBLES_001",
+                    "school": "Bedrock Elementary Stone School"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "PUT": {
+          "description": "Update resident information (ADMIN ONLY)",
+          "authorization": "Requires DISTRICT_ADMIN or CHIEF_MAMMOTH_KEEPER permissions",
+          "note": "Only authorized personnel can modify resident records"
+        },
+        "DELETE": {
+          "description": "Archive resident record (does not actually delete)",
+          "warning": "Resident will be marked as 'relocated to Granite City' - reversible action"
+        }
+      },
+      "/citizens/v3/search": {
+        "POST": {
+          "description": "Advanced search for residents (NEW ENDPOINT)",
+          "request_example": {
+            "search_criteria": {
+              "name_contains": "Flint",
+              "employment_sector": "quarrying",
+              "has_pets": true,
+              "bowling_average_min": 150,
+              "district": "Cobblestone"
+            },
+            "sort_options": {
+              "sort_by": "registration_date",
+              "sort_order": "descending"
+            },
+            "return_fields": ["resident_id", "full_name", "employment", "bowling_score"]
+          },
+          "response_example": {
+            "search_results": [
+              {
+                "resident_id": "RES_FRED_001",
+                "full_name": "Frederick J. Flintstone",
+                "employment": "Senior Quarry Operator",
+                "bowling_score": 165,
+                "match_score": 0.95
+              }
+            ],
+            "result_count": 1,
+            "search_time_ms": 250,
+            "cached_result": false
+          }
+        }
+      }
+    }
+  },
+  "authentication_details": {
+    "token_format": "MAMMOTH_[32_character_hex]",
+    "token_expiration": "72 mammoth hours (3 days)",
+    "refresh_required": true,
+    "permissions": {
+      "READ_BASIC": "View public resident information",
+      "READ_DETAILED": "View full resident profiles",
+      "ADMIN_WRITE": "Create and modify resident records",
+      "DISTRICT_ADMIN": "Full access within specific district",
+      "CHIEF_MAMMOTH_KEEPER": "System-wide administrative access"
+    }
+  },
+  "rate_limits": {
+    "standard_user": "50 requests per mammoth hour",
+    "verified_business": "200 requests per mammoth hour", 
+    "government_access": "1000 requests per mammoth hour",
+    "emergency_services": "Unlimited (priority routing)"
+  },
+  "error_responses": {
+    "authentication_errors": {
+      "401": {
+        "code": "MAMMOTH_TOKEN_INVALID",
+        "message": "Mammoth tusk authentication failed",
+        "action_required": "Obtain new mammoth token from District Office"
+      },
+      "403": {
+        "code": "INSUFFICIENT_MAMMOTH_PERMISSIONS", 
+        "message": "Your mammoth clearance level is insufficient",
+        "action_required": "Contact District Administrator for permission upgrade"
+      }
+    },
+    "data_errors": {
+      "404": {
+        "code": "RESIDENT_NOT_IN_CAVE_SYSTEM",
+        "message": "Resident record not found in cave database",
+        "suggestion": "Check resident_id format: RES_[NAME]_[NUMBER]"
+      },
+      "422": {
+        "code": "INVALID_DISTRICT_CODE",
+        "message": "Provided district code does not match resident location",
+        "action_required": "Verify X-District-Code header value"
+      }
+    }
+  },
+  "data_formats": {
+    "resident_id_format": "RES_[UPPERCASE_NAME]_[3_DIGIT_NUMBER]",
+    "date_format": "Stone Age Year [number], [season_name] [day]",
+    "address_format": "[number] [street_name], [district], Bedrock",
+    "phone_format": "[AREA_CODE]-[3_DIGIT_EXTENSION]"
+  },
+  "important_notes": {
+    "breaking_changes_v3": [
+      "Endpoint paths changed from /api/v2/ to /citizens/v3/",
+      "Authentication switched from stone_token to mammoth_key format",
+      "Response field names updated (citizens -> residents, id -> resident_id)",
+      "Pagination changed from offset-based to page-based",
+      "Rate limits reduced for standard users"
+    ],
+    "migration_guide": "https://citizens.bedrock.gov/docs/v3-migration",
+    "deprecation_notice": "v2 endpoints will be sunset after Woolly Mammoth Season"
+  },
+  "contact_information": {
+    "technical_support": "Send carrier pterodactyl to Bedrock Citizens IT Cave",
+    "api_documentation": "https://citizens.bedrock.gov/api-docs",
+    "emergency_access": "Contact Chief Mammoth Keeper via emergency horn signal",
+    "business_hours": "Dawn to Dusk, Monday through Stonesday"
+  }
+}
