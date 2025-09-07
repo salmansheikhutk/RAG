@@ -20,8 +20,8 @@ app = Flask(__name__)
 class RAGConfig:
     # OpenAI Settings
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    GENERATION_MODEL = "gpt-3.5-turbo" 
-    EMBEDDING_MODEL = "text-embedding-ada-002"
+    GENERATION_MODEL = "gpt-4o-mini" 
+    EMBEDDING_MODEL = "text-embedding-3-small"
     TEMPERATURE = 0.1
     MAX_TOKENS = 2000
     
