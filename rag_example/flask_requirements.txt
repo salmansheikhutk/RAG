@@ -1,0 +1,5 @@
+# Flask RAG Application Requirements
+flask==3.0.0
+openai==1.106.1
+numpy==2.3.2
+python-dotenv==1.1.1
